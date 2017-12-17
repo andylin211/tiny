@@ -1,3 +1,11 @@
+.vs
+*.opensdf
+*.sdf
+*.user
+*.ilk
+*.exp
+*/Debug/
+
 # Prerequisites
 *.d
 
