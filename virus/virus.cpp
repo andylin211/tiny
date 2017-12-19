@@ -31,6 +31,46 @@ wchar_t* doc_file[] = {
 };
 
 
+int read_tag_registry()
+{
+	int ret = 0;
+	HKEY hkey = NULL;
+	LONG err = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, (is_x64_system()) ? L"Software\\Wow6432Node\\virus" : L"Software\\virus", 0, KEY_READ, &hkey);
+	if (ERROR_SUCCESS == err)
+	{
+		WCHAR buffer[256] = { 0 };
+		LONG dwSize = 256;
+		err = ::RegQueryValue(hkey, L"index", buffer, &dwSize);
+		if (ERROR_SUCCESS == err)
+			ret = wcstol(buffer, 0, 10);
+		::RegCloseKey(hkey);
+	}
+
+	return ret;
+}
+
+void tag_registry(int index)
+{
+	HKEY hkey = NULL;
+	LONG err = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"Software", 0, KEY_READ, &hkey);
+	if (ERROR_SUCCESS == err)
+	{
+		HKEY hsub = NULL;
+		err = ::RegCreateKey(hkey, L"virus", &hsub);
+		//err = ::RegQueryValueEx(hkey, L"index", 0, NULL, (LPBYTE)buffer, &dwSize);
+		if (ERROR_SUCCESS == err)
+		{
+			WCHAR buffer[256] = { 0 };
+			wcs_format(buffer, 256, L"%d", index);
+			err = ::RegSetValue(hsub, L"index", REG_SZ, buffer, 0);
+			::RegCloseKey(hsub);
+		}
+
+		::RegCloseKey(hkey);
+	}
+}
+
+
 Virus_Window::Virus_Window()
 	:Fl_Double_Window(540, 500)
 {
@@ -58,7 +98,7 @@ Virus_Window::Virus_Window()
 	btn_doc = new Fl_Button(430, 50, 100, 25, btn_doc_buf);
 	btn_doc->callback(btn_doc_cb, this);	
 
-	p = "释放样本";
+	p = "手工构造";
 	fl_utf8from_mb(btn_sample_buf, 256, p, strlen(p));
 	btn_sample = new Fl_Button(320, 50, 100, 25, btn_sample_buf);
 	btn_sample->callback(btn_sample_cb, this);
@@ -102,7 +142,7 @@ void Virus_Window::init_choice()
 {
 	char* buffer = 0;
 
-	add_log(L">> read config ...");
+	add_log(L"读取配置 ...");
 
 	do
 	{
@@ -143,6 +183,9 @@ void Virus_Window::init_choice()
 		}
 
 	} while (0);
+
+	int i = read_tag_registry();
+	choice->value(i);
 
 	add_log(L"finished.");
 
@@ -217,7 +260,7 @@ void Virus_Window::btn_do_thread(void* data)
 {
 	Virus_Window* window = (Virus_Window*)data;
 
-	window->add_log(L">> 开始构造...");
+	window->add_log(L"开始构造...");
 
 	int i = window->choice->value();
 	if (i == -1)
@@ -244,6 +287,7 @@ void Virus_Window::btn_do_thread(void* data)
 		xml_element* ele = container_of(list_entry, xml_element, list_entry);
 		if (0 == wcscmp(name, xml_query_attribute(ele, "name")) && 0 == wcscmp(os, xml_query_attribute(ele, "os")))
 		{
+			tag_registry(window->choice->value());
 			do_steps(window, ele);
 			break;
 		}
@@ -273,7 +317,7 @@ void Virus_Window::btn_doc_thread(void* data)
 
 	for (i = IDR_DOC1; i <= IDR_DOC25; i++)
 	{
-		if (!release(L"", wcs_format(buf, 256, L"%s%s", temp, doc_file[i - IDR_DOC1]), i, 0, 0))
+		if (!release(L"", wcs_format(buf, 256, L"%s%s", temp, doc_file[i - IDR_DOC1]), i, 1, 0, 0))
 		{
 			window->add_log(buf);
 			window->add_log(L"释放出错! 忽略.");
@@ -311,10 +355,10 @@ void Virus_Window::btn_sample_thread(void* data)
 
 	window->add_log(to);
 
-	if (release(L"", to, IDR_VIRUS_ZIP, 0, 0))
+	if (release(L"", to, IDR_VIRUS_ZIP, 1, 0, 0))
 	{
 		window->add_log(L"成功！");
-		runexe(L"explorer.exe", to, 1, 0, 0);
+		runexe(L"explorer.exe", to, 0, 0, 0);
 	}
 	else
 	{
@@ -338,9 +382,9 @@ void Virus_Window::btn_pchunter_thread(void* data)
 	wcs_format(file, 256, L"%spchunter.exe", temp);
 
 	if (is_x64_system())
-		release(L"", file, IDR_VIRUS_PH64, 0, 0);
+		release(L"", file, IDR_VIRUS_PH64, 1, 0, 0);
 	else
-		release(L"", file, IDR_VIRUS_PH32, 0, 0);
+		release(L"", file, IDR_VIRUS_PH32, 1, 0, 0);
 	
 	window->add_log(L"正在打开pchunter.");
 	runexe(file, 0, 1, 0, 0);
@@ -349,6 +393,10 @@ void Virus_Window::btn_pchunter_thread(void* data)
 /* https://msdn.microsoft.com/zh-cn/library/windows/desktop/aa376871(v=vs.85).aspx */
 void Virus_Window::btn_reboot_thread(void* data)
 {
+	Virus_Window* window = (Virus_Window*)data;
+
+	window->add_log(L"正在重启...");
+
 	HANDLE hToken;
 	TOKEN_PRIVILEGES tkp;
 

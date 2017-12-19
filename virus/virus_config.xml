@@ -10,13 +10,11 @@
     <checksys os="xp"/>
     <release file="7ffecbfb.sys" to="c:\windows\system32\drivers\7ffecbfb.sys" />
     <regsrv name="7ffecbfb" binPath="c:\windows\system32\drivers\7ffecbfb.sys" start="auto" type="kernel" />
-    <runsrv name="7ffecbfb"/>
   </virus>
   <virus name="hqbzrnsjo.sys" os="win764" type="RootKit病毒" >
     <checksys os="win764"/>
     <release file="hqbzrnsjo.sys" to="c:\windows\system32\drivers\hqbzrnsjo.sys" />
     <regsrv name="hqbzrnsjo" binPath="c:\windows\system32\drivers\hqbzrnsjo.sys" start="auto" type="kernel" />
-    <runsrv name="hqbzrnsjo"/>
   </virus>
   <virus name="MpKslKnbZi.dll" os="xp;win732" type="RootKit病毒" >
     <checksys os="xp;win732"/>

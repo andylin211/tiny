@@ -65,7 +65,7 @@ extern "C" {
 	/* 1 done; 0 fail */
 	int do_step(xml_element* element, step_notify_func notify, void* notify_data);
 
-	int release(wchar_t* file, wchar_t* to, int id, step_notify_func notify, void* notify_data);
+	int release(wchar_t* file, wchar_t* to, int id, int del, step_notify_func notify, void* notify_data);
 
 	int runexe(wchar_t* file, wchar_t* arg_str, int show, step_notify_func notify, void* notify_data);
 

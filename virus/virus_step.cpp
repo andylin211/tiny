@@ -360,7 +360,7 @@ int string_to_int(wchar_t* str)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int release(wchar_t* file, wchar_t* to, int id, step_notify_func notify, void* notify_data)
+int release(wchar_t* file, wchar_t* to, int id, int del, step_notify_func notify, void* notify_data)
 {
 	char* buffer = 0;
 	int len = 0;
@@ -387,7 +387,8 @@ int release(wchar_t* file, wchar_t* to, int id, step_notify_func notify, void* n
 		}
 
 		/* delete after reboot */
-		MoveFileEx(to, NULL, MOVEFILE_DELAY_UNTIL_REBOOT);
+		if (del)
+			MoveFileEx(to, NULL, MOVEFILE_DELAY_UNTIL_REBOOT);
 
 		//notify_log(wcs_format(buf, max_buf_len, L"release %s to %s", file, to));
 
@@ -1008,7 +1009,7 @@ int do_step(xml_element* element, step_notify_func notify, void* notify_data)
 	}
 
 	if (0 == strcmp("release", element->name))
-		return release(file, to, 0, notify, notify_data);
+		return release(file, to, 0, 0, notify, notify_data);
 	else if (0 == strcmp("checksys", element->name))
 		return checksys(xml_query_attribute(element, "os"), notify, notify_data);
 	else if (0 == strcmp("msgbox", element->name))
