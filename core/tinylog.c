@@ -5,6 +5,7 @@
 #include <io.h>
 #include <windows.h>
 #include "tinystr.h"
+#include <stdlib.h>
 
 #define target_file "C:\\tinylog.txt"
 

@@ -225,8 +225,6 @@ wchar_t* md_load_block_ordered_list(wchar_t* buffer, md_object_t** object)
 			buffer = skip_line(buffer);
 	}
 
-	buffer = skip_line(buffer);
-
 	return buffer;
 }
 
@@ -534,8 +532,6 @@ wchar_t* md_load_block_unordered_list(wchar_t* buffer, md_object_t** object)
 		while (*buffer != 0 && is_empty_line(buffer))
 			buffer = skip_line(buffer);
 	}
-
-	buffer = skip_line(buffer);
 
 	return buffer;
 }

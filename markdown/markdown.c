@@ -300,7 +300,7 @@ int main(int argc, char* argv[])
 		if (!fp2)
 			break;
 
-		md_document_to_html(doc, encoding_utf8, fp2);
+		md_document_to_html(doc, encoding_ansi, fp2);
 
 		/*ZeroMemory(&startupInfo, sizeof(startupInfo));
 		startupInfo.cb = sizeof(startupInfo);

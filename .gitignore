@@ -5,6 +5,13 @@
 *.ilk
 *.exp
 */Debug/
+*.db
+Release/
+*/x64/
+*.sys
+*.reg
+*.bin
+*.aps
 
 # Prerequisites
 *.d

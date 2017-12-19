@@ -3,6 +3,7 @@
 #include <Shlobj.h>
 #include "tinyxml.h"
 #include <assert.h>
+#include "tinyargs.h"
 
 #define max_col_span 20
 
@@ -57,6 +58,8 @@ typedef struct
 	wchar_t* name;
 	wchar_t* value;
 	list_entry_t list_entry;
+	int item_count;
+	wchar_t** select_item_value;
 }ui_data;
 
 typedef struct
@@ -160,11 +163,20 @@ ui_data* ui_new_data(xml_element* element, int row, int col, ui_type_enum type, 
 
 void ui_free_data(ui_data* data)
 {
+	int i = 0;
+
 	if (!data)
 		return;
 
 	free(data->name);
 	free(data->value);
+
+	for (i = 0; i < data->item_count; i++)
+	{
+		free(data->select_item_value[i]);
+	}
+	free(data->select_item_value);
+
 	free(data);
 }
 
@@ -207,8 +219,11 @@ ui_table* ui_create_table(char* buffer)
 	xml_element* ele_tr = 0;
 	xml_element* ele_td = 0;
 	xml_element* ele = 0;
+	xml_element* ele_select = 0;
+	xml_element* ele_item = 0;
 	list_entry_t* list_entrya = 0;
 	list_entry_t* list_entryb = 0;
+	list_entry_t* list_entry_item = 0;
 	int has_control = 0;
 	ui_type_enum type = 0;
 	wchar_t* name = 0;
@@ -218,6 +233,7 @@ ui_table* ui_create_table(char* buffer)
 	int max_col = 0;
 	int row_skip = 0;
 	int row_skip_max = 0;
+	int i = 0;
 
 	if (!buffer)
 		return 0;	
@@ -290,6 +306,14 @@ ui_table* ui_create_table(char* buffer)
 						name = xml_query_attribute(ele, "name");
 						value = ele->text;
 					}
+					else if (0 == strcmp(ele->name, "select"))
+					{
+						has_control = 1;
+						type = type_select;
+						name = xml_query_attribute(ele, "name");
+						value = ele->text;			
+						ele_select = ele;
+					}
 				}
 				else if (ele_td->text)
 				{
@@ -310,6 +334,26 @@ ui_table* ui_create_table(char* buffer)
 					/* find max skip */
 					if (row_skip_max < data->rowspan - 1)
 						row_skip_max = data->rowspan - 1;
+
+					if (type == type_select)
+					{
+						data->item_count = 0;
+						for (list_entry_item = ele_select->element_list.flink; list_entry_item != &ele_select->element_list; list_entry_item = list_entry_item->flink)
+							data->item_count++;
+
+						if (data->item_count > 0)
+						{
+							i = 0;
+							data->select_item_value = (wchar_t**)safe_malloc(sizeof(wchar_t*) * data->item_count);
+							for (list_entry_item = ele_select->element_list.flink; list_entry_item != &ele_select->element_list; list_entry_item = list_entry_item->flink)
+							{
+								ele_item = container_of(list_entry_item, xml_element, list_entry);
+								data->select_item_value[i] = (wchar_t*)safe_malloc(sizeof(wchar_t) * (wcslen(ele_item->text) + 1));
+								wcscpy(data->select_item_value[i], ele_item->text);
+								i++;
+							}
+						}				
+					}
 				}
 				else
 					col++;
@@ -351,11 +395,21 @@ typedef struct
 
 typedef struct
 {
+	task_func task_foo;
+	void* args;
+	int id;
+	list_entry_t list_entry;
+}ui_delay_task;
+
+typedef struct
+{
 	HANDLE hwnd;
 	int x, y, w, h;
 	int id_max;
 	list_entry_t control_list;
 	HBRUSH hbr_bk;
+	list_entry_t delay_task_list;
+	int delay_task_start_id;
 }ui_window;
 
 LRESULT CALLBACK ui_window_proc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
@@ -363,8 +417,10 @@ LRESULT CALLBACK ui_window_proc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lpar
 	ui_window* window = 0;
 	list_entry_t* list_entry = 0;
 	ui_control* control = 0;
-	task_func task = 0;
+	task_func task_foo = 0;
 	HDC hdc;
+	int task_id = (int)wparam;
+	ui_delay_task* task = 0;
 	
 	window = (ui_window*)(LONG_PTR)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
@@ -372,6 +428,25 @@ LRESULT CALLBACK ui_window_proc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lpar
 	{
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		return 0;
+	case WM_TIMER:
+		for (list_entry = window->delay_task_list.flink; list_entry != &window->delay_task_list; list_entry = list_entry->flink)
+		{
+			task = container_of(list_entry, ui_delay_task, list_entry);
+			if (task->id == task_id)
+			{
+				if (task->task_foo)
+					task->task_foo(task->args);
+
+				remove_from_list(&task->list_entry);
+
+				KillTimer(hwnd, task->id);
+				
+				free(task);
+
+				break;
+			}
+		}
 		return 0;
 	case WM_COMMAND:
 		if (HIWORD(wparam) == BN_CLICKED)
@@ -394,9 +469,9 @@ LRESULT CALLBACK ui_window_proc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lpar
 		return (INT_PTR)window->hbr_bk;
 	}
 	case wm_post_task:
-		task = (task_func)wparam;
-		assert(task);
-		task((void*)lparam);
+		task_foo = (task_func)wparam;
+		assert(task_foo);
+		task_foo((void*)lparam);
 		return 1;
 	default:
 		break;
@@ -410,11 +485,13 @@ ui_window* ui_create_window(ui_table* table)
 	RECT rect = { 0 };
 	ui_window* window = 0;
 	list_entry_t* list_entry = 0;
+	list_entry_t* list_entry_select = 0;
 	ui_control* control = 0;
 	HFONT hfont = { 0 };
 	LOGFONT logfont = { 0 };
 	unsigned long style = 0;
 	int i = 0;
+	int j = 0;
 	char buf[max_buf_len];
 
 	SystemParametersInfoW(SPI_GETWORKAREA, 0, &rect, 0);
@@ -425,6 +502,7 @@ ui_window* ui_create_window(ui_table* table)
 	window->x = (rect.left + rect.right - window->w) / 2;
 	window->y = (rect.top + rect.bottom - window->h) / 2;
 	window->id_max = 500;
+	window->delay_task_start_id = 1;
 
 	window->hbr_bk = CreateSolidBrush(RGB(0xee, 0xee, 0xee));
 
@@ -452,6 +530,8 @@ ui_window* ui_create_window(ui_table* table)
 	window->w += window->w - (rect.right - rect.left + 1);
 	window->h += window->h - (rect.bottom - rect.top + 1);
 	SetWindowPos(window->hwnd, 0, 0, 0, window->w, window->h, SWP_NOMOVE | SWP_NOZORDER);
+
+	initialize_list_head(&window->delay_task_list);
 
 	initialize_list_head(&window->control_list);
 	for (list_entry = table->data_list.flink; list_entry != &table->data_list; list_entry = list_entry->flink)
@@ -535,6 +615,24 @@ ui_window* ui_create_window(ui_table* table)
 				NULL,
 				NULL);
 			SendMessage(control->hwnd, PBM_SETRANGE32, (WPARAM)0, (LPARAM)(100));
+		}
+		else if (control->data->type == type_select)
+		{
+			style = CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | WS_VSCROLL;
+			control->hwnd = CreateWindowW(
+				WC_COMBOBOX,
+				NULL,
+				style,
+				control->x, control->y, control->w, 200,
+				window->hwnd,
+				(HMENU)control->id,
+				NULL,
+				NULL);
+			for (j = 0; j < control->data->item_count; j++)
+			{
+				SendMessage(control->hwnd, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)(control->data->select_item_value[j]));
+			}
+			SendMessage(control->hwnd, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
 		}
 		
 		hfont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
@@ -643,6 +741,34 @@ void ui()
 	free(buffer);
 }
 
+void ui2(void (*foo)(void*))
+{
+	list_entry_t* list_entry = 0;
+	ui_table* table = 0;
+	ui_window* window = 0;
+	char* buffer = 0;
+
+	buffer = ui_copy_resource();
+	if (!buffer)
+		return;
+
+	table = ui_create_table(buffer);
+	if (!table)
+		return;
+
+	window = ui_create_window(table);
+
+	foo(window);
+
+	ui_show_window(window);
+
+	ui_free_window(window);
+
+	ui_free_table(table);
+
+	free(buffer);
+}
+
 void* ui_get_hwnd(void* ui_context)
 {
 	ui_window* window = (ui_window*)ui_context;
@@ -664,6 +790,26 @@ void ui_post_task(void* ui_context, char* name, void* arg_list)
 		return;
 
 	PostMessage(window->hwnd, wm_post_task, (WPARAM)task, (LPARAM)arg_list);
+}
+
+void ui_post_delay_task(void* ui_context, int ms, char* name, void* arg_list)
+{
+	ui_window* window = (ui_window*)ui_context;
+	char buf[max_buf_len];
+
+	task_func task_foo = (task_func)GetProcAddress(NULL, str_format(buf, max_buf_len, "on_%s_task", name));
+
+	if (!window || !task_foo)
+		return;
+
+	ui_delay_task* task = (ui_delay_task*)safe_malloc(sizeof(ui_delay_task));
+	task->id = window->delay_task_start_id++;
+	task->task_foo = task_foo;
+	task->args = arg_list;
+
+	insert_into_list(&window->delay_task_list, &task->list_entry);
+
+	SetTimer(window->hwnd, task->id, ms, (TIMERPROC)0);
 }
 
 wchar_t* ui_ask_open_file(void* ui_context)
@@ -725,7 +871,7 @@ static ui_control* ui_find_control(void* ui_context, wchar_t* name)
 	ui_window* window = (ui_window*)ui_context;
 	ui_control* control = 0;
 
-	if (!window)
+	if (!window || !name)
 		return 0;
 
 	for (list_entry = window->control_list.flink; list_entry != &window->control_list; list_entry = list_entry->flink)
@@ -740,24 +886,48 @@ static ui_control* ui_find_control(void* ui_context, wchar_t* name)
 	return 0;
 }
 
+void ui_set_icon(void* ui_context, int id)
+{
+	HICON hicon = NULL;
+	ui_window* window = (ui_window*)ui_context;
+
+	if (!window)
+		return;
+
+	hicon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(id));
+	SendMessage(window->hwnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+	SendMessage(window->hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+}
+
+
 void ui_set_value(void* ui_context, wchar_t* name, wchar_t* value)
 {
 	ui_control* control = ui_find_control(ui_context, name);
 	int line_count = 0;
 
+	if (!ui_context || !name || !value)
+		return;
+
 	if (control)
 	{
-		free(control->data->value);
-		control->data->value = new_wchar_string(value);
-		if (control->data->type == type_progress)
-			SendMessage(control->hwnd, PBM_SETPOS, (WPARAM)_wtoi(control->data->value), (LPARAM)0);
-		else
-			SendMessage(control->hwnd, WM_SETTEXT, (WPARAM)0, (LPARAM)control->data->value);
-
-		if (control->data->type == type_textarea)
+		if (control->data->type == type_select)
 		{
-			line_count = SendMessage(control->hwnd, EM_GETLINECOUNT, 0, 0);
-			SendMessage(control->hwnd, EM_LINESCROLL, (WPARAM)0, (LPARAM)line_count);
+			SendMessage(control->hwnd, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)value);
+		}
+		else
+		{
+			free(control->data->value);
+			control->data->value = new_wchar_string(value);
+			if (control->data->type == type_progress)
+				SendMessage(control->hwnd, PBM_SETPOS, (WPARAM)_wtoi(control->data->value), (LPARAM)0);
+			else
+				SendMessage(control->hwnd, WM_SETTEXT, (WPARAM)0, (LPARAM)control->data->value);
+
+			if (control->data->type == type_textarea)
+			{
+				line_count = SendMessage(control->hwnd, EM_GETLINECOUNT, 0, 0);
+				SendMessage(control->hwnd, EM_LINESCROLL, (WPARAM)0, (LPARAM)line_count);
+			}
 		}
 	}
 }
@@ -766,6 +936,9 @@ wchar_t* ui_get_value(void* ui_context, wchar_t* name)
 {
 	int len = 0;
 	ui_control* control = ui_find_control(ui_context, name);
+
+	if (!ui_context || !name)
+		return L"";
 
 	if (control)
 	{
@@ -820,7 +993,10 @@ void ui_hide(void* ui_context, wchar_t* name)
 
 #ifdef tinyui_test
 
-
+ui_click(virus_button, ui_context)
+{
+	ui_set_value(ui_context, L"virus_select", L"Ëæ±ãË®µç·Ñ¸¶¸¶¸¶¸¶¸¶¸¶¸¶¸¶");
+}
 
 int main()
 {	

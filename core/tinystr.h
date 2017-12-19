@@ -34,6 +34,8 @@ extern "C" {
 
 	wchar_t* wcs_format_large(wchar_t* format, ...);
 
+	char* str_format_large(char* format, ...);
+
 	int wcs_find(wchar_t* string, wchar_t ch);
 
 	int str_find(char* string, char ch);

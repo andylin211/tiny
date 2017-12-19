@@ -45,7 +45,7 @@ char* keyword[] = {
 
 static int is_delimeter(char ch)
 {
-	return !((unsigned)ch >= 0x80 || isalpha(ch));
+	return !((unsigned)ch >= 0x80 || isalpha(ch) || ch == '_');
 }
 
 static int is_keyword(char* string)
@@ -59,7 +59,7 @@ static int is_keyword(char* string)
 
 	for (i = 0; i < sizeof(keyword) / sizeof(keyword[0]); i++)
 	{
-		if (is_delimeter(string[strlen(keyword[i])])
+		if (strlen(string) > strlen(keyword[i]) && is_delimeter(string[strlen(keyword[i])])
 			&& 0 == strncmp(string, keyword[i], strlen(keyword[i])))
 			return i;
 	}
@@ -79,7 +79,7 @@ static char* is_function(char* string, int* len)
 	if ((*string) & 0x80 || !(isalpha(*string) || *string == '_'))
 		return 0;
 
-	while ((!(*string) & 0x80) && (isalnum(*string) || *string == '_'))
+	while ((!(*string & 0x80)) && (isalnum(*string) || *string == '_'))
 	{
 		string++;
 		(*len)++;

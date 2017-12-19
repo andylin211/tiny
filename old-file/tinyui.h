@@ -9,7 +9,11 @@ extern "C" {
 
 	void ui();
 
+	void ui2(void(*foo)(void*));
+
 	void* ui_get_hwnd(void* ui_context);
+
+	void ui_set_icon(void* ui_context, int id);
 
 	/* value */
 	void ui_set_value(void* ui_context, wchar_t* name, wchar_t* value);
@@ -37,9 +41,11 @@ extern "C" {
 	void ui_hide(void* ui_context, wchar_t* name);
 
 	/* post task */
-	#define ui_task(name, data) __declspec(dllexport) void on_##name##_task(void* arg_list)
+	#define ui_task(name, arg_list) __declspec(dllexport) void on_##name##_task(void* arg_list)
 
 	void ui_post_task(void* ui_context, char* name, void* arg_list);
+
+	void ui_post_delay_task(void* ui_context, int ms, char* name, void* arg_list);
 
 #ifdef __cplusplus
 }
