@@ -417,6 +417,8 @@ int main(int argc, char* argv[])
 	/* 先显示了再初始化 */
 	window.init_choice();
 
+	Fl::lock();
+
 	return Fl::run();
 }
 
