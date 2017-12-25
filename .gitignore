@@ -5,6 +5,7 @@
 *.ilk
 *.exp
 */Debug/
+*.aps
 
 # Prerequisites
 *.d
