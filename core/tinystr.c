@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <Windows.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #define max_buf_size 512
 
@@ -147,6 +148,41 @@ wchar_t* wcs_format(wchar_t* buffer, int size, wchar_t* format, ...)
 	return buffer;
 }
 
+char* str_vformat_large(char* format, va_list arg_list)
+{
+	char* buffer = 0;
+	int len = max_buf_size;
+
+	buffer = (char*)safe_malloc((len + 1) * sizeof(char));
+	while (-1 == _vsnprintf(buffer, len, format, arg_list))
+	{
+		free(buffer);
+		len *= 2;
+		buffer = (char*)safe_malloc((len + 1) * sizeof(char));
+	}
+
+	return buffer;
+}
+
+
+char* str_format_large(char* format, ...)
+{
+	char* buffer = 0;
+	va_list args;
+	int len = max_buf_size;
+
+	va_start(args, format);
+	buffer = (char*)safe_malloc((len + 1) * sizeof(char));
+	while (-1 == _vsnprintf(buffer, len, format, args))
+	{
+		free(buffer);
+		len *= 2;
+		buffer = (char*)safe_malloc((len + 1) * sizeof(char));
+	}
+	va_end(args);
+
+	return buffer;
+}
 
 wchar_t* wcs_vformat_large(wchar_t* format, va_list arg_list)
 {

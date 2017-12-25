@@ -6,6 +6,15 @@
 *.exp
 */Debug/
 *.aps
+*.db
+*.opendb
+Release/
+*/x64/
+*.sys
+*.reg
+*.bin
+*.aps
+*(密码123).zip
 
 # Prerequisites
 *.d
