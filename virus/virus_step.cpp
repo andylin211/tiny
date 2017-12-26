@@ -15,6 +15,7 @@
 
 #define physical_drive_0 L"\\\\.\\physicaldrive0"
 
+/* 这里可以优化一下，L"IDR_XXXX" 可以find resource */
 wchar_t* idr_name_index[] = {
 	L"7ffecbfb.sys",
 	L"anyun2mbr.bin",

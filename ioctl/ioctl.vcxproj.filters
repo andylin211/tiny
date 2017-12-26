@@ -13,75 +13,103 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{b8f5fbc4-9cd9-4eab-b75f-ba42317fa8ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ioctlfuzz.c">
+    <ClCompile Include="ioctl.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\getopt.c">
+    <ClCompile Include="ioctl_bmp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ioctl_table.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ioctl_browser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\tinyxml.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\tinyargs.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\tinykv.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\tinylist.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\tinystr.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="ioctl_fuzz.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\core\getrand.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\md5.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinyargs.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinykv.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinylist.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\tinylog.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinystr.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinyxml.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ioctlfuzz_ui.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ioctlfuzz.h">
+    <ClInclude Include="ioctl.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\getopt.h">
+    <ClInclude Include="ioctl_bmp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ioctl_table.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ioctl_browser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\tinyxml.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\tinyargs.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\tinykv.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\tinylist.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\tinystr.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>资源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="ioctl_fuzz.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\core\getrand.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\md5.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\tinyargs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\tinykv.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\tinylist.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\core\tinylog.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\tinystr.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\tinyxml.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ioctlfuzz_ui.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ioctl.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="scan.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="fuzz.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

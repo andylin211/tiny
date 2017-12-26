@@ -1,6 +1,5 @@
 #include "ioctlfuzz.h"
 #include <stdio.h>
-#include "tinyui.h"
 #include "tinystr.h"
 #include "tinyargs.h"
 #include "md5.h"
@@ -9,6 +8,7 @@
 #include <Windows.h>
 #include "getopt.h"
 #include "tinylog.h"
+#include "ioctlfuzz_ui.h"
 
 #define max_buf_len 512
 
@@ -287,95 +287,6 @@ ui_click(fuzz_button, ui_context)
 ui_click(clear_button, ui_context)
 {
 	ui_set_value(ui_context, L"log_textarea", L"");
-}
-
-ui_task(md5_progress_update, arg_list)
-{
-	args_t* args = arg_list;
-	void* ui_context = args->p0;
-	int current = (int)args->p1;
-	int total = (int)args->p2;
-	wchar_t* md5 = (wchar_t*)args->p3;
-	int progress = 100;
-	wchar_t buf[max_buf_len];
-	
-	if (total)
-		progress = current * 100 / total;
-
-	ui_set_value(ui_context, L"progress", wcs_format(buf, max_buf_len, L"%d", progress));
-	if (current == total)
-	{
-		if (md5)
-			ui_set_value(ui_context, L"md5_input", md5);
-		g_busy = 0;
-	}
-
-	free(md5);
-	free(args);
-}
-
-void md5_notify(int current, int total, void* ui_context)
-{
-	args_t* args = (args_t*)safe_malloc(sizeof(args_t));
-	args->p0 = ui_context;
-	args->p1 = (void*)current;
-	args->p2 = (void*)total;
-	ui_post_task(ui_context, "md5_progress_update", args);
-}
-
-
-unsigned __stdcall md5_thread(void* arg_list)
-{
-	args_t* args = arg_list;
-	args_t* p = 0;
-	wchar_t* md5 = 0;
-	void* ui_context = args->p0;
-	wchar_t* file = args->p1;
-
-	md5 = md5_compute(file, md5_notify, ui_context);
-
-	p = (args_t*)safe_malloc(sizeof(args_t));
-	p->p0 = args->p0;
-	p->p1 = (void*)100;
-	p->p2 = (void*)100;
-	p->p3 = (wchar_t*)safe_malloc(sizeof(wchar_t) * (wcslen(md5) + 1));
-	wcscpy(p->p3, md5);
-	ui_post_task(ui_context, "md5_progress_update", p);	
-
-	free(file);
-	free(args);
-
-	_endthreadex(0);
-	return 0;
-}
-
-ui_click(file_button, ui_context)
-{
-	wchar_t* file = 0;
-	wchar_t* md5 = 0;
-	args_t* p = 0;
-	HANDLE thread = NULL;	
-
-	if (g_busy)
-		return;
-
-	file = ui_ask_open_file(ui_context);
-
-	if (file)
-	{
-		g_busy = 1;
-		ui_disable(ui_context, L"check_button");
-		ui_set_value(ui_context, L"file_input", file);
-		ui_set_value(ui_context, L"md5_input", L"¼ÆËãÖÐ...");
-
-		p = (args_t*)safe_malloc(sizeof(args_t));
-		p->p0 = ui_context;
-		p->p1 = (wchar_t*)safe_malloc(sizeof(wchar_t*) * (wcslen(file) + 1));
-		wcscpy(p->p1, file);
-		
-		thread = (HANDLE)_beginthreadex(NULL, 0, md5_thread, p, 0, NULL);
-		CloseHandle(thread);
-	}
 }
 
 void usage(char *program_name)

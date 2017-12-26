@@ -10,6 +10,7 @@
 #include "fl_draw.H"
 #include "Fl_Text_Buffer.H"
 #include "Fl_Multiline_Output.H"
+#include "Fl_Check_Button.H"
 #include "resource.h"
 
 const int buf_len = 256;
@@ -108,8 +109,8 @@ public:
 	test_table(int x, int y, int w, int h)
 		:Fl_Table_Row(x,y,w,h)
 	{
-
 	}
+
 	void draw_cell(TableContext context, int r = 0, int c = 0, int x = 0, int y = 0, int w = 0, int h = 0)
 	{
 		static char s[40];
@@ -128,6 +129,7 @@ public:
 				fl_draw_box(FL_THIN_UP_BOX, x, y, w, h, col_header_color());
 				fl_color(FL_BLACK);
 				fl_draw(s, x, y, w, h, FL_ALIGN_CENTER);
+
 			}
 			fl_pop_clip();
 			return;
@@ -153,8 +155,7 @@ public:
 				// TEXT
 				fl_color(cell_fgcolor);
 				fl_draw(s, x, y, w, h, FL_ALIGN_CENTER);
-
-				// BORDER
+								// BORDER
 				fl_color(color());
 				fl_rect(x, y, w, h);
 			}
@@ -307,14 +308,20 @@ private:
 	}
 	/* table */
 	test_table* table;
+	
 	void set_table()
 	{
-		table = new test_table(browser_width, tool_bar_height + menu_bar_height, width - browser_width, browser_height);
+		int x = browser_width;
+		int y = tool_bar_height + menu_bar_height;
+		int w = width - browser_width;
+		int h = browser_height;
+		table = new test_table(x, y, w, h);
 		table->end();
 		table->col_header(1);
-		table->cols(6);
+		table->cols(10);
 		table->rows(20);
 		table->row_height_all(20);
+		//table->col_width(0, 18);
 	}
 	/* log */
 	Fl_Multiline_Output* log;
