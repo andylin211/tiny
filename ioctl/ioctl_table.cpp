@@ -17,7 +17,7 @@ Ioctl_Table::Ioctl_Table(int x, int y, int w, int h, const char *l)
 	callback(&event_callback, (void*)this);
 	col_resize(1);
 	col_header(1);
-	v_line = 0;
+	itable = 0;
 	Fl_Menu_Button *mb = new Fl_Menu_Button(x, y+20, w, h-20);
 	mb->type(Fl_Menu_Button::POPUP3);
 	mb->box(FL_NO_BOX);
@@ -69,21 +69,18 @@ void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, in
 			switch (c)
 			{
 			case 0:
-				fl_draw(label_conv("设备名"), x, y, w, h, FL_ALIGN_CENTER);
-				break;
-			case 1:
 				fl_draw(label_conv("控制码"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
-			case 2:
+			case 1:
 				fl_draw(label_conv("设备类型"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
-			case 3:
+			case 2:
 				fl_draw(label_conv("函数号"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
-			case 4:
+			case 3:
 				fl_draw(label_conv("缓存类型"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
-			case 5:
+			case 4:
 				fl_draw(label_conv("权限"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
 			default:
@@ -114,9 +111,9 @@ void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, in
 
 			// TEXT
 			fl_color(fgcolor);
-			if (v_line && r < (int)v_line->size())
+			if (itable && r < (int)itable->v_line.size())
 			{
-				char** str = (char**)(&v_line->at(r));
+				char** str = (char**)(itable->v_line.at(r));
 				fl_draw(str[c], x, y, w, h, FL_ALIGN_CENTER);
 			}
 				
@@ -139,14 +136,20 @@ void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, in
 	}
 }
 
-void Ioctl_Table::update(std::vector<ioctl_line> *v_line)
+void Ioctl_Table::update(ioctl_table* t)
 {
 	Fl::lock();
-	this->v_line = v_line;
-	if (v_line && (int)v_line->size() / cols() > min_row_)
-		rows(v_line->size() / cols());
+	itable = t;
+	if (t && (int)t->v_line.size() > min_row)
+	{
+		col_width_all(width / 5 - 3);
+		rows(t->v_line.size());
+	}
 	else
-		rows(min_row_);
+	{
+		col_width_all(width / 5);
+		rows(min_row);
+	}
 	Fl::unlock();
 	redraw();
 }

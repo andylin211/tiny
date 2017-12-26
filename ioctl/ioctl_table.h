@@ -17,9 +17,8 @@ class Ioctl_Table : public Fl_Table_Row
 public:
 	Ioctl_Table(int x, int y, int w, int h, const char *l = 0);
 
-	void update(std::vector<ioctl_line> *v_line);
+	void update(ioctl_table* t);
 
-	void min_row(int i) { min_row_ = i; }
 private:
 	static void event_callback(Fl_Widget*, void*);
 
@@ -27,8 +26,10 @@ private:
 
 	void draw_cell(TableContext context, int r, int c, int x, int y, int w, int h);
 
-private:
-	int min_row_;
+public:
+	int width;
 
-	std::vector<ioctl_line> *v_line;
+	int min_row;
+
+	ioctl_table* itable;
 };

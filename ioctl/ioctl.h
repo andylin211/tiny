@@ -39,7 +39,7 @@ public:
 
 	static void step_notify(int current, int total, args_t* notify_data);
 
-	void update_table(std::vector<ioctl_line> *line);
+	void update_table(ioctl_table* t);
 
 	//void resize(int x, int y, int w, int h);
 

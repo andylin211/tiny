@@ -6,17 +6,81 @@
 #include <map>
 #include <vector>
 #include "tinyxml.h"
+#include "common.h"
 
 class Ioctl_Window;
 
-typedef struct {
-	char* device;
+class  ioctl_line 
+{
+public:
 	char* code;
 	char* type;
 	char* func;
 	char* method;
 	char* access;
-}ioctl_line;
+	ioctl_line(wchar_t* c, wchar_t* t, wchar_t* f, wchar_t* m, wchar_t* a) 
+	{
+		code = wcs_to_str(c, -1, encoding_utf8);
+		type = wcs_to_str(t, -1, encoding_utf8);
+		func = wcs_to_str(f, -1, encoding_utf8);
+		method = wcs_to_str(m, -1, encoding_utf8);
+		access = wcs_to_str(a, -1, encoding_utf8);
+	}
+	~ioctl_line() 
+	{
+		free(code);
+		free(type);
+		free(func);
+		free(method);
+		free(access);
+	}
+};
+
+class ioctl_table 
+{
+public:
+	char* device;
+	std::vector<ioctl_line*> v_line;
+	ioctl_table(xml_document* doc)
+	{
+		device = 0;
+		v_line.clear();
+
+		if (!doc->root_element)
+			return;
+
+		if (strcmp(doc->root_element->name, "device"))
+			return;
+
+		device = wcs_to_str(xml_query_attribute(doc->root_element, "name"), -1, encoding_utf8);
+		if (!is_list_empty(&doc->root_element->element_list))
+		{
+			for (list_entry_t* i = doc->root_element->element_list.flink; i != &doc->root_element->element_list; i = i->flink)
+			{
+				xml_element* ele = container_of(i, xml_element, list_entry);
+				wchar_t* code = xml_query_attribute(ele, "code");
+				wchar_t* type = xml_query_attribute(ele, "type");
+				wchar_t* function = xml_query_attribute(ele, "function");
+				wchar_t* method = xml_query_attribute(ele, "method");
+				wchar_t* access = xml_query_attribute(ele, "access");
+
+				ioctl_line* line = new ioctl_line(code, type_str(type), function, method_str(method), access_str(access));
+				v_line.push_back(line);
+			}
+		}
+	}
+	~ioctl_table()
+	{
+		free(device);
+		for (std::vector<ioctl_line*>::iterator i = v_line.begin(); i != v_line.end(); i++)
+		{
+			ioctl_line* p = *i;
+			if (p)
+				delete p;
+		}
+		v_line.clear();
+	}
+};
 
 class Ioctl_Browser : public Fl_Hold_Browser
 {
@@ -38,13 +102,7 @@ private:
 	/* thread safe */
 	void update_(char* str);
 
-	std::map<char*, std::vector<ioctl_line>*> map_line;
-
-	void free_ioctl_line(ioctl_line* li);
-
-	void free_map_line(std::vector<ioctl_line>* line);
-
-	void add_map_line(wchar_t* file, std::vector<ioctl_line>* line);
+	std::map<char*, ioctl_table*> map_config;
 
 	Ioctl_Window* win;
 };

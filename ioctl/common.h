@@ -147,3 +147,123 @@ inline void set_menu_label(char* utf8, char* gbk)
 {
 	fl_utf8from_mb(utf8, buf_len, gbk, strlen(gbk));
 }
+
+
+inline wchar_t* type_str(wchar_t* str)
+{
+	static struct {
+		wchar_t* v1;
+		wchar_t* v2;
+	} type_def[] =
+	{
+		{ L"FILE_DEVICE_UNKNOWN",L"Unknown" }, /* 基本上都是这个 */
+		{ L"FILE_DEVICE_8042_PORT", L"8042 Port" },
+		{ L"FILE_DEVICE_ACPI", L"Acpi" },
+		{ L"FILE_DEVICE_BATTERY", L"Battery" },
+		{ L"FILE_DEVICE_BEEP", L"Beep" },
+		{ L"FILE_DEVICE_BUS_EXTENDER",L"Bus Extender" },
+		{ L"FILE_DEVICE_CD_ROM",L"CD Rom" },
+		{ L"FILE_DEVICE_CD_ROM_FILE_SYSTEM",L"CD Rom File System" },
+		{ L"FILE_DEVICE_CHANGER",L"Changer" },
+		{ L"FILE_DEVICE_CONTROLLER",L"Controller" },
+		{ L"FILE_DEVICE_DATALINK",L"Data Link" },
+		{ L"FILE_DEVICE_DFS",L"DFS" },
+		{ L"FILE_DEVICE_DFS_FILE_SYSTEM",L"DFS File System" },
+		{ L"FILE_DEVICE_DFS_VOLUME",L"DFS Volume" },
+		{ L"FILE_DEVICE_DISK",L"Disk" },
+		{ L"FILE_DEVICE_DISK_FILE_SYSTEM",L"Disk File System" },
+		{ L"FILE_DEVICE_DVD",L"DVD" },
+		{ L"FILE_DEVICE_FILE_SYSTEM",L"File System" },
+		{ L"FILE_DEVICE_FIPS",L"FIPS" },
+		{ L"FILE_DEVICE_FULLSCREEN_VIDEO",L"Fullscreen Video" },
+		{ L"FILE_DEVICE_INPORT_PORT",L"Inport Port" },
+		{ L"FILE_DEVICE_KEYBOARD",L"Keyboard" },
+		{ L"FILE_DEVICE_KS",L"KS" },
+		{ L"FILE_DEVICE_KSEC",L"KSEC" },
+		{ L"FILE_DEVICE_MAILSLOT",L"Mailslot" },
+		{ L"FILE_DEVICE_MASS_STORAGE",L"Mass Storage" },
+		{ L"FILE_DEVICE_MIDI_IN",L"MIDI In" },
+		{ L"FILE_DEVICE_MIDI_OUT",L"MIDI Out" },
+		{ L"FILE_DEVICE_MODEM",L"Modem" },
+		{ L"FILE_DEVICE_MOUSE",L"Mouse" },
+		{ L"FILE_DEVICE_MULTI_UNC_PROVIDER ",L"Multi Unc Provider" },
+		{ L"FILE_DEVICE_NAMED_PIPE",L"Named Pipe" },
+		{ L"FILE_DEVICE_NETWORK",L"Network" },
+		{ L"FILE_DEVICE_NETWORK_BROWSER",L"Network Browser" },
+		{ L"FILE_DEVICE_NETWORK_FILE_SYSTEM",L"Network File System" },
+		{ L"FILE_DEVICE_NETWORK_REDIRECTOR ",L"Network Redirector" },
+		{ L"FILE_DEVICE_NULL",L"Null" },
+		{ L"FILE_DEVICE_PARALLEL_PORT",L"Parallel Port" },
+		{ L"FILE_DEVICE_PHYSICAL_NETCARD",L"Physical Netcard" },
+		{ L"FILE_DEVICE_PRINTER",L"Printer" },
+		{ L"FILE_DEVICE_SCANNER",L"Scanner" },
+		{ L"FILE_DEVICE_SCREEN",L"Screen" },
+		{ L"FILE_DEVICE_SERENUM",L"Serenum" },
+		{ L"FILE_DEVICE_SERIAL_MOUSE_PORT",L"Serial Mouse Port" },
+		{ L"FILE_DEVICE_SERIAL_PORT",L"Serial Port" },
+		{ L"FILE_DEVICE_SMARTCARD",L"Smartcard" },
+		{ L"FILE_DEVICE_SMB",L"SMB" },
+		{ L"FILE_DEVICE_SOUND",L"Sound" },
+		{ L"FILE_DEVICE_STREAMS",L"Streams" },
+		{ L"FILE_DEVICE_TAPE",L"Tape" },
+		{ L"FILE_DEVICE_TAPE_FILE_SYSTEM",L"Tape File System" },
+		{ L"FILE_DEVICE_TERMSRV",L"Termsrv" },
+		{ L"FILE_DEVICE_TRANSPORT",L"Transport" },
+		{ L"FILE_DEVICE_VDM",L"VDM" },
+		{ L"FILE_DEVICE_VIDEO",L"Video" },
+		{ L"FILE_DEVICE_VIRTUAL_DISK",L"Virtual Disk" },
+		{ L"FILE_DEVICE_WAVE_IN",L"Wave In" },
+		{ L"FILE_DEVICE_WAVE_OUT",L"Wave Out" },
+	};
+	if (str)
+		for (int i = 0; i < sizeof(type_def) / sizeof(type_def[0]); i++)
+		{
+			if (0 == wcscmp(type_def[i].v1, str))
+				return type_def[i].v2;
+		}
+
+	return 0;
+}
+
+inline wchar_t* access_str(wchar_t* str)
+{
+	if (!str)
+		return 0;
+
+	if (!wcscmp(L"FILE_READ_ACCESS", str))
+		return L"读";
+
+	if (!wcscmp(L"FILE_WRITE_ACCESS", str))
+		return L"写";
+
+	if (!wcscmp(L"FILE_ANY_ACCESS", str))
+		return L"任意";
+
+	wchar_t buf[buf_len];
+	wcsncpy(buf, str, buf_len);
+	wcs_remove(buf, L' ');
+	if (!wcscmp(L"FILE_READ_ACCESS|FILE_WRITE_ACCESS", buf))
+		return L"读写";
+
+	return 0;
+}
+
+inline wchar_t* method_str(wchar_t* str)
+{
+	if (!str)
+		return 0;
+
+	if (!wcscmp(L"METHOD_BUFFERED", str))
+		return L"Buffered";
+
+	if (!wcscmp(L"METHOD_IN_DIRECT", str))
+		return L"In Direct";
+
+	if (!wcscmp(L"METHOD_OUT_DIRECT", str))
+		return L"Out Direct";
+
+	if (!wcscmp(L"METHOD_NEITHER", str))
+		return L"Neither";
+
+	return 0;
+}

@@ -27,8 +27,8 @@ Fl_Menu_Item menu_table[] = {
 	{ menu_file, 0,0,0,FL_SUBMENU },
 	{ menu_open,	FL_CTRL + 'o', &Ioctl_Window::open_cb, 0 },
 	{ menu_save,	FL_CTRL + 's', &Ioctl_Window::save_cb, 0 },
-	{ menu_close,	0,	&Ioctl_Window::close_cb, 0, FL_MENU_DIVIDER },
-	{ menu_quit,	FL_ALT + 'q', &Ioctl_Window::quit_cb, 0 },
+	{ menu_close,	FL_CTRL + FL_ALT + 'c',	&Ioctl_Window::close_cb, 0, FL_MENU_DIVIDER },
+	{ menu_quit,	FL_CTRL + 'q', &Ioctl_Window::quit_cb, 0 },
 	{ 0 },
 	{ menu_scan, 0,0,0,FL_SUBMENU },
 	{ menu_scan_device,	FL_ALT + 'd', 0, 0 },
@@ -82,23 +82,17 @@ void Ioctl_Window::set_menu_bar()
 	{
 		menu_table[i].labelfont(FL_HELVETICA);
 		menu_table[i].labelsize(12);
+		menu_table[i].user_data(this);
 	}
 }
 
-#define default_device_str "device to scan.."
+#define default_device_str "device name.."
 
 void Ioctl_Window::device_cb(Fl_Widget* w, void* v)
 {
 	Fl_Input* in = (Fl_Input*)w;
-	if (in->size() && strcmp(in->value(), default_device_str))
-	{
-		in->textcolor(FL_BLACK);
-	}
-	else
-	{
-		in->insert(default_device_str);
-		in->textcolor(0x60606000);
-	}
+	if (!in->size())
+		in->value(default_device_str);
 	in->redraw();
 }
 
@@ -113,17 +107,19 @@ void Ioctl_Window::set_tool_bar()
 	b_dev->labelfont(FL_HELVETICA);
 
 	device = new Fl_Input(2, menu_bar_height + 30, 95, 20);
-	device->insert(default_device_str);
-	device->textcolor(0x60606000);
+	device->value(default_device_str);
+	device->textcolor(FL_BLACK);
 	device->textfont(FL_HELVETICA);
 	device->textsize(12);
-	device->cursor_color(0xc0606000);
+	device->cursor_color(0x60606000);
 	device->color(0xf0f0f000);
 	device->box(FL_GTK_UP_BOX);
 	device->callback(device_cb, this);
+	//device->when(FL_WHEN_ENTER_KEY_CHANGED);
+
 	//device->clear_visible_focus();
-	device->position(0);
-	device->mark(device->size());
+	//device->position(0);
+	//device->mark(device->size());
 	//device->copy_label(label_conv("Éè±¸:"));
 
 	tb_scan = add_tool_button("É¨Ãè", IDR_SCAN, 0, 100);
@@ -135,7 +131,7 @@ void Ioctl_Window::set_tool_bar()
 	tb_stop = add_tool_button("Í£Ö¹", IDR_STOP);
 	tb_quit = add_tool_button("ÍË³ö", IDR_QUIT);
 	//tb_save->deactivate();
-
+	
 #define tb_call_back(name) tb_##name->callback(name##_cb, this)
 	tb_call_back(open);
 	tb_call_back(save);
@@ -190,9 +186,11 @@ void Ioctl_Window::set_table()
 	table = new Ioctl_Table(x, y, w, h);
 	table->end();
 	table->col_header(1);	
-	table->cols(6);
-	table->min_row(12);
-	table->rows(12);
+	table->cols(5);
+	table->width = w - 2;
+	table->col_width_all(table->width / 5);
+	table->min_row = (browser_height / 20 - 1);
+	table->rows(table->min_row);
 	table->row_height_all(20);
 	table->selection_color(FL_YELLOW);
 	table->col_resize(0);
@@ -211,6 +209,8 @@ void Ioctl_Window::set_log()
 	set_label_font_12(box);
 	log->buffer(log_buf);                 // attach text buffer to display widget
 	log->wrap_mode(Fl_Text_Display::WRAP_AT_COLUMN, log->textfont());
+	log->textfont(FL_HELVETICA);
+	log->textsize(12);
 }
 
 void Ioctl_Window::set_status()
@@ -231,9 +231,9 @@ void Ioctl_Window::add_log(wchar_t* wcs)
 	log_buf->insert(log_buf->length(), str);
 	log_buf->insert(log_buf->length(), "\n");
 	log->scroll(log_buf->count_lines(0, log_buf->length()), 0);
-
+	log->redraw();
 	Fl::unlock();
-
+	
 	free(str);
 }
 
@@ -245,9 +245,13 @@ void Ioctl_Window::step_notify(int current, int total, args_t* notify_data)
 	window->add_log(msg);
 }
 
-void Ioctl_Window::update_table(std::vector<ioctl_line> *v)
+void Ioctl_Window::update_table(ioctl_table* t)
 {
-	table->update(v);
+	table->update(t);
+	if (t)
+		device->value(t->device);
+	else
+		device->value(default_device_str);
 }
 
 void Ioctl_Window::open_thread(void* data)
@@ -337,9 +341,9 @@ void Ioctl_Window::stop_thread(void* data)
 
 void Ioctl_Window::quit_thread(void* data)
 {
-
+	Ioctl_Window* win = (Ioctl_Window*)data;
+	//win->hide();
 }
-
 
 int main(int argc, char* argv[])
 {
