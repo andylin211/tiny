@@ -1,4 +1,4 @@
-#include "ioctl_fuzz.h"
+#include "ioctl_fu--zz.h"
 #include <Windows.h>
 #include <Shlwapi.h>
 #include "tinystr.h"

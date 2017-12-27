@@ -28,7 +28,8 @@ Ioctl_Table::Ioctl_Table(int x, int y, int w, int h, const char *l)
 		pulldown[i].labelsize(12);
 	}
 	mb->menu(pulldown);
-	//mb.callback(test_cb);
+
+	type(SELECT_SINGLE);
 }
 
 void Ioctl_Table::event_callback(Fl_Widget* o, void* v)
@@ -45,6 +46,9 @@ void Ioctl_Table::event_callback2()
 	printf("'%s' callback: ", (label() ? label() : "?"));
 	printf("Row=%d Col=%d Context=%d Event=%d InteractiveResize? %d\n",
 		R, C, (int)context, (int)Fl::event(), (int)is_interactive_resize());
+
+	//printf("%d", row_scroll_position(R));
+
 }
 
 void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, int w, int h)
@@ -69,21 +73,27 @@ void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, in
 			switch (c)
 			{
 			case 0:
-				fl_draw(label_conv("控制码"), x, y, w, h, FL_ALIGN_CENTER);
+				fl_draw(label_conv("控制码(hex)"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
 			case 1:
 				fl_draw(label_conv("设备类型"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
 			case 2:
-				fl_draw(label_conv("函数号"), x, y, w, h, FL_ALIGN_CENTER);
+				fl_draw(label_conv("权限类型"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
 			case 3:
-				fl_draw(label_conv("缓存类型"), x, y, w, h, FL_ALIGN_CENTER);
+				fl_draw(label_conv("功能号(hex)"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
 			case 4:
-				fl_draw(label_conv("权限"), x, y, w, h, FL_ALIGN_CENTER);
+				fl_draw(label_conv("缓冲类型"), x, y, w, h, FL_ALIGN_CENTER);
 				break;
-			default:
+			case 5:
+				fl_draw(label_conv("字节数(In)"), x, y, w, h, FL_ALIGN_CENTER);
+				break; 
+			case 6:
+				fl_draw(label_conv("字节数(Out)"), x, y, w, h, FL_ALIGN_CENTER);
+				break; 
+				default:
 				break;
 			}
 			
@@ -142,12 +152,12 @@ void Ioctl_Table::update(ioctl_table* t)
 	itable = t;
 	if (t && (int)t->v_line.size() > min_row)
 	{
-		col_width_all(width / 5 - 3);
+		col_width_all(width / 7 - 3);
 		rows(t->v_line.size());
 	}
 	else
 	{
-		col_width_all(width / 5);
+		col_width_all(width / 7);
 		rows(min_row);
 	}
 	Fl::unlock();

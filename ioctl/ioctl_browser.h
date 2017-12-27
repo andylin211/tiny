@@ -15,16 +15,20 @@ class  ioctl_line
 public:
 	char* code;
 	char* type;
+	char* access;
 	char* func;
 	char* method;
-	char* access;
-	ioctl_line(wchar_t* c, wchar_t* t, wchar_t* f, wchar_t* m, wchar_t* a) 
+	char* inlen;
+	char* oulen;
+	ioctl_line(wchar_t* c, wchar_t* t, wchar_t* f, wchar_t* m, wchar_t* a, wchar_t* in, wchar_t* ou)
 	{
 		code = wcs_to_str(c, -1, encoding_utf8);
 		type = wcs_to_str(t, -1, encoding_utf8);
 		func = wcs_to_str(f, -1, encoding_utf8);
 		method = wcs_to_str(m, -1, encoding_utf8);
 		access = wcs_to_str(a, -1, encoding_utf8);
+		inlen = wcs_to_str(in, -1, encoding_utf8);
+		oulen = wcs_to_str(ou, -1, encoding_utf8);
 	}
 	~ioctl_line() 
 	{
@@ -33,6 +37,8 @@ public:
 		free(func);
 		free(method);
 		free(access);
+		free(inlen);
+		free(oulen);
 	}
 };
 
@@ -63,8 +69,10 @@ public:
 				wchar_t* function = xml_query_attribute(ele, "function");
 				wchar_t* method = xml_query_attribute(ele, "method");
 				wchar_t* access = xml_query_attribute(ele, "access");
+				wchar_t* inlen = xml_query_attribute(ele, "inlen");
+				wchar_t* oulen = xml_query_attribute(ele, "oulen");
 
-				ioctl_line* line = new ioctl_line(code, type_str(type), function, method_str(method), access_str(access));
+				ioctl_line* line = new ioctl_line(code, type_str(type), function, method_str(method), access_str(access), inlen, oulen);
 				v_line.push_back(line);
 			}
 		}

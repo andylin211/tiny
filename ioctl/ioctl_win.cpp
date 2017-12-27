@@ -1,8 +1,10 @@
-#include "ioctl.h"
+#include "ioctl_win.h"
 #include "tinystr.h"
 #include "resource.h"
 #include "ioctl_fuzz.h"
 #include "FL\Fl_Input.H"
+#include "FL\Fl_Tooltip.H"
+#include "FL\Fl_File_Chooser.H"
 
 //Scan_Window::Scan_Window()
 //	:Fl_Window(400, 300)
@@ -27,24 +29,38 @@ Fl_Menu_Item menu_table[] = {
 	{ menu_file, 0,0,0,FL_SUBMENU },
 	{ menu_open,	FL_CTRL + 'o', &Ioctl_Window::open_cb, 0 },
 	{ menu_save,	FL_CTRL + 's', &Ioctl_Window::save_cb, 0 },
-	{ menu_close,	FL_CTRL + FL_ALT + 'c',	&Ioctl_Window::close_cb, 0, FL_MENU_DIVIDER },
-	{ menu_quit,	FL_CTRL + 'q', &Ioctl_Window::quit_cb, 0 },
+	{ menu_close,	FL_CTRL + FL_SHIFT + 'c',	&Ioctl_Window::close_cb, 0, FL_MENU_DIVIDER },
+	{ menu_quit, 0, &Ioctl_Window::quit_cb, 0 },
 	{ 0 },
 	{ menu_scan, 0,0,0,FL_SUBMENU },
-	{ menu_scan_device,	FL_ALT + 'd', 0, 0 },
-	{ menu_scan_file,	0, &Ioctl_Window::scan_cb, 0 },
+	{ menu_scan_device,	FL_CTRL + FL_SHIFT + 's', 0, 0 },
+	{ menu_scan_file,	FL_ALT + FL_SHIFT + 's', &Ioctl_Window::scan_cb, 0 },
 	{ 0 },
 	{ menu_fuzz, 0,0,0,FL_SUBMENU },
-	{ menu_fuzz_go,	FL_ALT + FL_SHIFT + 'f', &Ioctl_Window::fuzz_cb, 0 },
-	{ menu_fuzz_pause,	0, &Ioctl_Window::pause_cb, 0 },
-	{ menu_fuzz_stop,	0, &Ioctl_Window::stop_cb, 0 },
+	{ menu_fuzz_go,	FL_CTRL + FL_SHIFT + 'f', &Ioctl_Window::fuzz_cb, 0 },
+	{ menu_fuzz_pause,	FL_CTRL + 'p', &Ioctl_Window::pause_cb, 0 },
+	{ menu_fuzz_stop,	FL_CTRL + 'b', &Ioctl_Window::test_cb, 0 },
 	{ 0 },
 	{ 0 }
 };
 
+void Ioctl_Window::test_cb(Fl_Widget* o, void* v)
+{
+	Ioctl_Update update_win((Ioctl_Window*)v);
+	update_win.show();
+	while (update_win.visible()) {
+		Fl::wait();
+	}
+	printf("sd");
+}
+
 Ioctl_Window::Ioctl_Window()
 	:Fl_Window(WIN_W, WIN_H)
 {
+	Fl_Tooltip::font(FL_HELVETICA);
+	Fl_Tooltip::size(12);
+	Fl_Tooltip::color(0xfffff000);
+
 	copy_label(label_conv("设备驱动ioctl fuzz工具（测试）"));
 
 	set_menu_bar();
@@ -52,12 +68,11 @@ Ioctl_Window::Ioctl_Window()
 	set_browser();
 	set_table();
 	set_log();
-	set_status();
+	set_status();	
 
 	labelfont(FL_HELVETICA);
 	labelsize(12);
-	end();
-
+	end();	
 	//resizable(this);
 	//Fl::scheme("gtk+")
 }
@@ -100,36 +115,15 @@ void Ioctl_Window::set_tool_bar()
 {
 	Fl_Box* box = new Fl_Box(FL_UP_BOX, 0, menu_bar_height, width + 1, tool_bar_height, "");
 
-	Fl_Box* b_dev = new Fl_Box(FL_NO_BOX, 2, menu_bar_height + 10, 95, 20, "");
-	b_dev->copy_label(label_conv("设备名:"));
-	b_dev->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
-	b_dev->labelsize(12);
-	b_dev->labelfont(FL_HELVETICA);
-
-	device = new Fl_Input(2, menu_bar_height + 30, 95, 20);
-	device->value(default_device_str);
-	device->textcolor(FL_BLACK);
-	device->textfont(FL_HELVETICA);
-	device->textsize(12);
-	device->cursor_color(0x60606000);
-	device->color(0xf0f0f000);
-	device->box(FL_GTK_UP_BOX);
-	device->callback(device_cb, this);
-	//device->when(FL_WHEN_ENTER_KEY_CHANGED);
-
-	//device->clear_visible_focus();
-	//device->position(0);
-	//device->mark(device->size());
-	//device->copy_label(label_conv("设备:"));
-
-	tb_scan = add_tool_button("扫描", IDR_SCAN, 0, 100);
-	tb_open = add_tool_button("打开", IDR_OPEN);
-	tb_save = add_tool_button("保存", IDR_SAVE);
-	tb_close = add_tool_button("关闭", IDR_CLOSE);
-	tb_fuzz = add_tool_button("Fuzz", IDR_FUZZ);
-	tb_pause = add_tool_button("暂停", IDR_PAUSE);
-	tb_stop = add_tool_button("停止", IDR_STOP);
-	tb_quit = add_tool_button("退出", IDR_QUIT);
+	tb_scan = add_tool_button("扫描", "扫描设备(Ctrl+Shift+S)", IDR_SCAN);
+	tb_code = add_tool_button("代码", "扫描源代码(Alt+Shift+S)", IDR_CODE);
+	tb_open = add_tool_button("导入", "导入新配置(Ctrl+O)", IDR_OPEN);
+	tb_save = add_tool_button("保存", "保存当前配置(Ctrl+S)", IDR_SAVE);
+	tb_close = add_tool_button("关闭", "关闭当前配置(Ctrl+Shift+C)", IDR_CLOSE);
+	tb_fuzz = add_tool_button("Fuzz", "开始测试(Ctrl+Shift+F)", IDR_FUZZ);
+	tb_pause = add_tool_button("暂停", "暂停(Ctrl+P)", IDR_PAUSE);
+	tb_stop = add_tool_button("停止", "停止(Ctrl+B)", IDR_STOP);
+	tb_quit = add_tool_button("退出", "退出(Esc)", IDR_QUIT);
 	//tb_save->deactivate();
 	
 #define tb_call_back(name) tb_##name->callback(name##_cb, this)
@@ -142,7 +136,7 @@ void Ioctl_Window::set_tool_bar()
 	tb_call_back(stop);
 	tb_call_back(quit);
 }
-Fl_Button* Ioctl_Window::add_tool_button(char* label, int res, int x, int skip)
+Fl_Button* Ioctl_Window::add_tool_button(char* label, char* tooltip, int res, int skip)
 {
 	static int i = 0;
 	static int skip_ = 0;
@@ -155,26 +149,36 @@ Fl_Button* Ioctl_Window::add_tool_button(char* label, int res, int x, int skip)
 		skip_ += skip;
 
 	Fl_Button* btn = 0;
-	if (!x)
-	{
-		btn = new Fl_Button(skip_ + tool_bar_width * i, menu_bar_height, tool_bar_width, tool_bar_height - 1);
-		i++;
-	}
-	else
-		btn = new Fl_Button(x, menu_bar_height, tool_bar_width, tool_bar_height - 1);
-	
+	btn = new Fl_Button(skip_ + tool_bar_width * i, menu_bar_height, tool_bar_width, tool_bar_height);
+	btn->box(FL_NO_BOX);
+	//btn->copy_label(label_conv(label));
+	btn->copy_tooltip(label_conv(tooltip));
 	btn->image(bmp);
 	btn->deimage(dergb);
-	btn->copy_label(label_conv(label));
 	set_label_font_12(btn);
+	i++;
 	return btn;
 }
 
 void Ioctl_Window::set_browser()
 {
-	browser = new Ioctl_Browser(0, menu_bar_height + tool_bar_height, browser_width, browser_height);
+	browser = new Ioctl_Browser(0, menu_bar_height + tool_bar_height, browser_width, browser_height - 40);
 	browser->set_top_window(this);
 	browser->callback(&Ioctl_Browser::call_back);
+
+	Fl_Box* b_dev = new Fl_Box(FL_UP_BOX, 0, menu_bar_height + tool_bar_height + browser_height - 40, browser_width, 20, "");
+	b_dev->copy_label(label_conv("设备名称"));
+	b_dev->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+	b_dev->labelsize(12);
+	b_dev->labelfont(FL_HELVETICA);
+
+	device = new Fl_Input(0, menu_bar_height + tool_bar_height + browser_height - 20, browser_width, 20);
+	device->value(default_device_str);
+	device->textfont(FL_HELVETICA);
+	device->textsize(12);
+	device->box(FL_DOWN_BOX);
+	device->callback(device_cb, this);
+	device->copy_tooltip(label_conv("输入设备名, 省略路径\"\\\\.\\\""));;
 }
 
 void Ioctl_Window::set_table()
@@ -186,23 +190,24 @@ void Ioctl_Window::set_table()
 	table = new Ioctl_Table(x, y, w, h);
 	table->end();
 	table->col_header(1);	
-	table->cols(5);
-	table->width = w - 2;
-	table->col_width_all(table->width / 5);
+	table->cols(7);
+	table->width = w - 1;
+	table->col_width_all(table->width / 7);
 	table->min_row = (browser_height / 20 - 1);
 	table->rows(table->min_row);
 	table->row_height_all(20);
-	table->selection_color(FL_YELLOW);
+	table->selection_color(0xfffff000);
 	table->col_resize(0);
 	table->row_resize(0);
 	//table->update(0);
+
 }
 
 void Ioctl_Window::set_log()
 {
 	int i = menu_bar_height + tool_bar_height + browser_height;
 	Fl_Box* box = new Fl_Box(FL_UP_BOX, 0, i, width, 20, "");
-	box->copy_label(label_conv("日志"));
+	box->copy_label(label_conv("日志输出"));
 
 	log_buf = new Fl_Text_Buffer();
 	log = new Fl_Text_Display(0, i + 20, width, height - 40 - i);
@@ -319,7 +324,7 @@ void Ioctl_Window::scan_thread(void* data)
 		wchar_t* buf = str_to_wcs((char*)v, -1, encoding_utf8);
 		args_t args;
 		args.p0 = win;
-		scan(buf, L"c:\\test.xml", step_notify, &args);
+		//scan(buf, L"c:\\test.xml", step_notify, &args);
 	}
 }
 
@@ -336,7 +341,7 @@ void Ioctl_Window::pause_thread(void* data)
 
 void Ioctl_Window::stop_thread(void* data)
 {
-
+	
 }
 
 void Ioctl_Window::quit_thread(void* data)
@@ -359,6 +364,8 @@ int main(int argc, char* argv[])
 		MessageBox(NULL, L"实例已运行！", L"", MB_OK);
 		return 0;
 	}
+
+
 
 	Ioctl_Window window;
 

@@ -14,6 +14,7 @@
 #include "ioctl_browser.h"
 #include "ioctl_bmp.h"
 #include "common.h"
+#include "ioctl_update.h"
 //
 //class Scan_Window : public Fl_Window
 //{
@@ -22,7 +23,7 @@
 //	char* device;
 //};
 
-#define WIN_W 640
+#define WIN_W 720
 #define WIN_H 480
 
 #define declare_cb_and_thread(name) \
@@ -51,6 +52,7 @@ public:
 	declare_cb_and_thread(pause);
 	declare_cb_and_thread(stop);
 	declare_cb_and_thread(quit);
+	static void test_cb(Fl_Widget* o, void* v);
 	
 private:
 	const int width = WIN_W;
@@ -58,26 +60,27 @@ private:
 	
 	/* menu bar */
 	void set_menu_bar();
-	const int menu_bar_height = 30;
+	const int menu_bar_height = 20;
 
 	/* tool bar */
 	Fl_Button* tb_open;
 	Fl_Button* tb_save;
 	Fl_Button* tb_close;
 	Fl_Button* tb_scan;
+	Fl_Button* tb_code;
 	Fl_Button* tb_fuzz;
 	Fl_Button* tb_pause;
 	Fl_Button* tb_stop;
 	Fl_Button* tb_quit;
-	const int tool_bar_height = 60;
-	const int tool_bar_width = 50;
+	const int tool_bar_height = 20;
+	const int tool_bar_width = 20;
 	void set_tool_bar();
-	Fl_Button* add_tool_button(char* label, int res, int x=0, int skip=0);
+	Fl_Button* add_tool_button(char* label, char* tooltip, int res, int skip=0);
 
 	/* browser */
 	Ioctl_Browser* browser;
-	const int browser_width = 140;
-	const int browser_height = 240;
+	const int browser_width = 200;
+	const int browser_height = 300;
 	void set_browser();
 
 	/* table */
@@ -97,5 +100,8 @@ private:
 	/* device */
 	Fl_Input* device;
 	static void device_cb(Fl_Widget* w, void* v);
+
+	/* popup */
+	Ioctl_Update* update;
 };
 

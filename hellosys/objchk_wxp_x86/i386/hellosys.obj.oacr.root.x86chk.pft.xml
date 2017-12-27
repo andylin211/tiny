@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+<OACRDEFECTCOUNT>4</OACRDEFECTCOUNT>
+<OACRERRORCOUNT>0</OACRERRORCOUNT>
+<DEFECT _seq="1"><SFA><LINE>444</LINE><COLUMN>9</COLUMN><FILENAME>hellosys.c</FILENAME><FILEPATH>c:\tiny\hellosys\</FILEPATH></SFA><DEFECTCODE>28101</DEFECTCODE><DESCRIPTION>The Drivers module has inferred that the current function is a DRIVER_INITIALIZE function:  This is informational only. No problem has been detected.</DESCRIPTION><FUNCTION>DriverEntry</FUNCTION><FUNCLINE>444</FUNCLINE><PATH/></DEFECT>
+<DEFECT _seq="2"><SFA><LINE>482</LINE><COLUMN>27</COLUMN><FILENAME>hellosys.c</FILENAME><FILEPATH>c:\tiny\hellosys\</FILEPATH></SFA><DEFECTCODE>28169</DEFECTCODE><DESCRIPTION>The dispatch function 'dispatch_func' does not have any __drv_dispatchType annotations:  This can be corrected by adding appropriate __drv_dispatchType annotations to the function. Unnecessary casts can cause this warning.</DESCRIPTION><FUNCTION>DriverEntry</FUNCTION><FUNCLINE>444</FUNCLINE><PATH/></DEFECT>
+<DEFECT _seq="3"><SFA><LINE>482</LINE><COLUMN>27</COLUMN><FILENAME>hellosys.c</FILENAME><FILEPATH>c:\tiny\hellosys\</FILEPATH></SFA><DEFECTCODE>28155</DEFECTCODE><DESCRIPTION>The function being assigned or passed should be a DRIVER_DISPATCH function:  Add the declaration 'DRIVER_DISPATCH dispatch_func;' before the current first declaration of dispatch_func.</DESCRIPTION><FUNCTION>DriverEntry</FUNCTION><FUNCLINE>444</FUNCLINE><PATH/></DEFECT>
+<DEFECT _seq="4"><SFA><LINE>484</LINE><COLUMN>22</COLUMN><FILENAME>hellosys.c</FILENAME><FILEPATH>c:\tiny\hellosys\</FILEPATH></SFA><DEFECTCODE>28155</DEFECTCODE><DESCRIPTION>The function being assigned or passed should be a DRIVER_UNLOAD function:  Add the declaration 'DRIVER_UNLOAD unload_func;' before the current first declaration of unload_func.</DESCRIPTION><FUNCTION>DriverEntry</FUNCTION><FUNCLINE>444</FUNCLINE><PATH/></DEFECT>
+</DEFECTS>

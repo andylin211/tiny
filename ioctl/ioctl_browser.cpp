@@ -1,5 +1,5 @@
 #include "ioctl_browser.h"
-#include "ioctl.h"
+#include "ioctl_win.h"
 #include "common.h"
 
 Ioctl_Browser::Ioctl_Browser(int x, int y, int w, int h, const char *l )
