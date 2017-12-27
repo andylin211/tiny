@@ -33,12 +33,14 @@ extern "C" {
 #define set_label_font_12(w) w->labelsize(12);\
 		w->labelfont(FL_HELVETICA)
 
+#define set_text_font_12(w) w->textsize(12);\
+		w->textfont(FL_HELVETICA)
+
 	void set_menu_label(char* utf8, char* gbk);
 
 	typedef struct {
 		wchar_t* v1;
 		wchar_t* v2;
-		char* v3;
 	} type_def_t;
 
 	extern type_def_t type_def[];
