@@ -135,3 +135,17 @@ sc start hellosys
 
 
 
+# 遍历驱动模块
+
+https://joychou.org/reverse/anti-debug-by-SOD.html
+
+应用层：
+psapi的EnumDeviceDrivers API来获取，其关键是调用ZwQuerySystemInformation
+
+
+http://blog.csdn.net/misterliwei/article/details/976988
+
+http://m.blog.csdn.net/hxc_huang/article/details/60471347
+
+https://www.bbsmax.com/A/gVdnNXW7dW/
+

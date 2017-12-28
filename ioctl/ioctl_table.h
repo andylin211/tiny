@@ -12,10 +12,12 @@
 #include <vector>
 #include "ioctl_browser.h"
 
+class Ioctl_Window;
+
 class Ioctl_Table : public Fl_Table_Row
 {
 public:
-	Ioctl_Table(int x, int y, int w, int h, const char *l = 0);
+	Ioctl_Table(Ioctl_Window* parent, int x, int y, int w, int h, const char *l = 0);
 
 	void update(ioctl_table* t);
 
@@ -31,5 +33,9 @@ public:
 
 	int min_row;
 
+	int selected_row;
+
 	ioctl_table* itable;
+
+	Ioctl_Window* parent;
 };

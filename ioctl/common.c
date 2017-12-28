@@ -2,64 +2,74 @@
 
 type_def_t type_def[] =
 {
-	{ L"FILE_DEVICE_UNKNOWN",L"未知" },
-	{ L"FILE_DEVICE_8042_PORT", L"8042 Port" },
-	{ L"FILE_DEVICE_ACPI", L"Acpi" },
-	{ L"FILE_DEVICE_BATTERY", L"Battery" },
-	{ L"FILE_DEVICE_BEEP", L"Beep" },
-	{ L"FILE_DEVICE_BUS_EXTENDER",L"Bus Extender" },
-	{ L"FILE_DEVICE_CD_ROM",L"CD Rom" },
-	{ L"FILE_DEVICE_CD_ROM_FILE_SYSTEM",L"CD Rom File System" },
-	{ L"FILE_DEVICE_CHANGER",L"Changer" },
-	{ L"FILE_DEVICE_CONTROLLER",L"Controller" },
-	{ L"FILE_DEVICE_DATALINK",L"Data Link" },
-	{ L"FILE_DEVICE_DFS",L"DFS" },
-	{ L"FILE_DEVICE_DFS_FILE_SYSTEM",L"DFS File System" },
-	{ L"FILE_DEVICE_DFS_VOLUME",L"DFS Volume" },
-	{ L"FILE_DEVICE_DISK",L"Disk" },
-	{ L"FILE_DEVICE_DISK_FILE_SYSTEM",L"Disk File System" },
-	{ L"FILE_DEVICE_DVD",L"DVD" },
-	{ L"FILE_DEVICE_FILE_SYSTEM",L"File System" },
-	{ L"FILE_DEVICE_FIPS",L"FIPS" },
-	{ L"FILE_DEVICE_FULLSCREEN_VIDEO",L"Fullscreen Video" },
-	{ L"FILE_DEVICE_INPORT_PORT",L"Inport Port" },
-	{ L"FILE_DEVICE_KEYBOARD",L"Keyboard" },
-	{ L"FILE_DEVICE_KS",L"KS" },
-	{ L"FILE_DEVICE_KSEC",L"KSEC" },
-	{ L"FILE_DEVICE_MAILSLOT",L"Mailslot" },
-	{ L"FILE_DEVICE_MASS_STORAGE",L"Mass Storage" },
-	{ L"FILE_DEVICE_MIDI_IN",L"MIDI In" },
-	{ L"FILE_DEVICE_MIDI_OUT",L"MIDI Out" },
-	{ L"FILE_DEVICE_MODEM",L"Modem" },
-	{ L"FILE_DEVICE_MOUSE",L"Mouse" },
-	{ L"FILE_DEVICE_MULTI_UNC_PROVIDER ",L"Multi Unc Provider" },
-	{ L"FILE_DEVICE_NAMED_PIPE",L"Named Pipe" },
-	{ L"FILE_DEVICE_NETWORK",L"Network" },
-	{ L"FILE_DEVICE_NETWORK_BROWSER",L"Network Browser" },
-	{ L"FILE_DEVICE_NETWORK_FILE_SYSTEM",L"Network File System" },
-	{ L"FILE_DEVICE_NETWORK_REDIRECTOR ",L"Network Redirector" },
-	{ L"FILE_DEVICE_NULL",L"Null" },
-	{ L"FILE_DEVICE_PARALLEL_PORT",L"Parallel Port" },
-	{ L"FILE_DEVICE_PHYSICAL_NETCARD",L"Physical Netcard" },
-	{ L"FILE_DEVICE_PRINTER",L"Printer" },
-	{ L"FILE_DEVICE_SCANNER",L"Scanner" },
-	{ L"FILE_DEVICE_SCREEN",L"Screen" },
-	{ L"FILE_DEVICE_SERENUM",L"Serenum" },
-	{ L"FILE_DEVICE_SERIAL_MOUSE_PORT",L"Serial Mouse Port" },
-	{ L"FILE_DEVICE_SERIAL_PORT",L"Serial Port" },
-	{ L"FILE_DEVICE_SMARTCARD",L"Smartcard" },
-	{ L"FILE_DEVICE_SMB",L"SMB" },
-	{ L"FILE_DEVICE_SOUND",L"Sound" },
-	{ L"FILE_DEVICE_STREAMS",L"Streams" },
-	{ L"FILE_DEVICE_TAPE",L"Tape" },
-	{ L"FILE_DEVICE_TAPE_FILE_SYSTEM",L"Tape File System" },
-	{ L"FILE_DEVICE_TERMSRV",L"Termsrv" },
-	{ L"FILE_DEVICE_TRANSPORT",L"Transport" },
-	{ L"FILE_DEVICE_VDM",L"VDM" },
-	{ L"FILE_DEVICE_VIDEO",L"Video" },
-	{ L"FILE_DEVICE_VIRTUAL_DISK",L"Virtual Disk" },
-	{ L"FILE_DEVICE_WAVE_IN",L"Wave In" },
-	{ L"FILE_DEVICE_WAVE_OUT",L"Wave Out" },
+	{ L"FILE_DEVICE_UNKNOWN", "unknown" },// almost this
+	{ L"FILE_DEVICE_BEEP", "beep" },
+	{ L"FILE_DEVICE_CD_ROM", "cd rom" },
+	{ L"FILE_DEVICE_CD_ROM_FILE_SYSTEM", "cd rom file system" },
+	{ L"FILE_DEVICE_CONTROLLER", "controller" },
+	{ L"FILE_DEVICE_DATALINK", "datalink" },
+	{ L"FILE_DEVICE_DFS", "dfs" },
+	{ L"FILE_DEVICE_DISK", "disk" },
+	{ L"FILE_DEVICE_DISK_FILE_SYSTEM", "disk file system" },
+	{ L"FILE_DEVICE_FILE_SYSTEM", "file system" },
+	{ L"FILE_DEVICE_INPORT_PORT", "inport port" },
+	{ L"FILE_DEVICE_KEYBOARD", "keyboard" },
+	{ L"FILE_DEVICE_MAILSLOT", "mailslot" },
+	{ L"FILE_DEVICE_MIDI_IN", "midi in" },
+	{ L"FILE_DEVICE_MIDI_OUT", "midi out" },
+	{ L"FILE_DEVICE_MOUSE", "mouse" },
+	{ L"FILE_DEVICE_MULTI_UNC_PROVIDER", "multi unc provider" },
+	{ L"FILE_DEVICE_NAMED_PIPE", "named pipe" },
+	{ L"FILE_DEVICE_NETWORK", "network" },
+	{ L"FILE_DEVICE_NETWORK_BROWSER", "network browser" },
+	{ L"FILE_DEVICE_NETWORK_FILE_SYSTEM", "network file system" },
+	{ L"FILE_DEVICE_NULL", "null" },
+	{ L"FILE_DEVICE_PARALLEL_PORT", "parallel port" },
+	{ L"FILE_DEVICE_PHYSICAL_NETCARD", "physical netcard" },
+	{ L"FILE_DEVICE_PRINTER", "printer" },
+	{ L"FILE_DEVICE_SCANNER", "scanner" },
+	{ L"FILE_DEVICE_SERIAL_MOUSE_PORT", "serial mouse port" },
+	{ L"FILE_DEVICE_SERIAL_PORT", "serial port" },
+	{ L"FILE_DEVICE_SCREEN", "screen" },
+	{ L"FILE_DEVICE_SOUND", "sound" },
+	{ L"FILE_DEVICE_STREAMS", "streams" },
+	{ L"FILE_DEVICE_TAPE", "tape" },
+	{ L"FILE_DEVICE_TAPE_FILE_SYSTEM", "tape file system" },
+	{ L"FILE_DEVICE_TRANSPORT", "transport" },
+	{ L"FILE_DEVICE_UNKNOWN", "unknown" },
+	{ L"FILE_DEVICE_VIDEO", "video" },
+	{ L"FILE_DEVICE_VIRTUAL_DISK", "virtual disk" },
+	{ L"FILE_DEVICE_WAVE_IN", "wave in" },
+	{ L"FILE_DEVICE_WAVE_OUT", "wave out" },
+	{ L"FILE_DEVICE_8042_PORT", "8042 port" },
+	{ L"FILE_DEVICE_NETWORK_REDIRECTOR", "network redirector" },
+	{ L"FILE_DEVICE_BATTERY", "battery" },
+	{ L"FILE_DEVICE_BUS_EXTENDER", "bus extender" },
+	{ L"FILE_DEVICE_MODEM", "modem" },
+	{ L"FILE_DEVICE_VDM", "vdm" },
+	{ L"FILE_DEVICE_MASS_STORAGE", "mass storage" },
+	{ L"FILE_DEVICE_SMB", "smb" },
+	{ L"FILE_DEVICE_KS", "ks" },
+	{ L"FILE_DEVICE_CHANGER", "changer" },
+	{ L"FILE_DEVICE_SMARTCARD", "smartcard" },
+	{ L"FILE_DEVICE_ACPI", "acpi" },
+	{ L"FILE_DEVICE_DVD", "dvd" },
+	{ L"FILE_DEVICE_FULLSCREEN_VIDEO", "fullscreen video" },
+	{ L"FILE_DEVICE_DFS_FILE_SYSTEM", "dfs file system" },
+	{ L"FILE_DEVICE_DFS_VOLUME", "dfs volume" },
+	{ L"FILE_DEVICE_SERENUM", "serenum" },
+	{ L"FILE_DEVICE_TERMSRV", "termsrv" },
+	{ L"FILE_DEVICE_KSEC", "ksec" },
+	{ L"FILE_DEVICE_FIPS", "fips" },
+	{ L"FILE_DEVICE_INFINIBAND", "infiniband" },
+	{ L"FILE_DEVICE_VMBUS", "vmbus" },
+	{ L"FILE_DEVICE_CRYPT_PROVIDER", "crypt provider" },
+	{ L"FILE_DEVICE_WPD", "wpd" },
+	{ L"FILE_DEVICE_BLUETOOTH", "bluetooth" },
+	{ L"FILE_DEVICE_MT_COMPOSITE", "mt composite" },
+	{ L"FILE_DEVICE_MT_TRANSPORT", "mt transport" },
+	{ L"FILE_DEVICE_BIOMETRIC", "biometric" },
+	{ L"FILE_DEVICE_PMI", "pmi" },
 };
 
 int type_def_size = sizeof(type_def) / sizeof(type_def[0]);
@@ -201,7 +211,7 @@ void set_menu_label(char* utf8, char* gbk)
 }
 
 
-wchar_t* type_str(wchar_t* str)
+char* type_str(wchar_t* str)
 {
 	if (str)
 		for (int i = 0; i < sizeof(type_def) / sizeof(type_def[0]); i++)
@@ -213,45 +223,64 @@ wchar_t* type_str(wchar_t* str)
 	return 0;
 }
 
-wchar_t* access_str(wchar_t* str)
+static void buf_gbk_to_utf8(char* buf, char* src)
 {
+	fl_utf8from_mb(buf, buf_len, src, strlen(src));
+}
+
+char* access_str(wchar_t* str)
+{
+	static char read[buf_len];
+	static char write[buf_len];
+	static char any[buf_len];
+	static char both[buf_len];
+	static int i = 0;
+	if (!i)
+	{
+		i++;
+		buf_gbk_to_utf8(read, "只读");
+		buf_gbk_to_utf8(write, "只写");
+		buf_gbk_to_utf8(any, "任意");
+		buf_gbk_to_utf8(both, "读写");
+	}
+
 	if (!str)
 		return 0;
 
 	if (!wcscmp(L"FILE_READ_ACCESS", str))
-		return L"只读";
+		return read;
 
 	if (!wcscmp(L"FILE_WRITE_ACCESS", str))
-		return L"只写";
+		return write;
 
 	if (!wcscmp(L"FILE_ANY_ACCESS", str))
-		return L"任意";
+		return any;
 
 	wchar_t buf[buf_len];
 	wcsncpy(buf, str, buf_len);
 	wcs_remove(buf, L' ');
 	if (!wcscmp(L"FILE_READ_ACCESS|FILE_WRITE_ACCESS", buf))
-		return L"读写";
+		return both;
 
 	return 0;
 }
 
-wchar_t* method_str(wchar_t* str)
+char* method_str(wchar_t* str)
 {
 	if (!str)
 		return 0;
 
 	if (!wcscmp(L"METHOD_BUFFERED", str))
-		return L"Buffered";
+		return "buffered";
 
 	if (!wcscmp(L"METHOD_IN_DIRECT", str))
-		return L"In Direct";
+		return "in direct";
 
 	if (!wcscmp(L"METHOD_OUT_DIRECT", str))
-		return L"Out Direct";
+		return "out direct";
 
 	if (!wcscmp(L"METHOD_NEITHER", str))
-		return L"Neither";
+		return "neither";
 
 	return 0;
 }

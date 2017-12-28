@@ -2,7 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="makefile" />
-    <ClCompile Include="source" />
     <ClCompile Include="hellosys.c" />
+    <ClCompile Include="enum_driver.cpp" />
+    <ClCompile Include="enum_device.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="sources" />
   </ItemGroup>
 </Project>

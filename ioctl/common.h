@@ -40,18 +40,18 @@ extern "C" {
 
 	typedef struct {
 		wchar_t* v1;
-		wchar_t* v2;
+		char* v2;
 	} type_def_t;
 
 	extern type_def_t type_def[];
 
 	extern int type_def_size;
 
-	wchar_t* type_str(wchar_t* str);
+	char* type_str(wchar_t* str);
 
-	wchar_t* access_str(wchar_t* str);
+	char* access_str(wchar_t* str);
 
-	wchar_t* method_str(wchar_t* str);
+	char* method_str(wchar_t* str);
 #ifdef __cplusplus
 }
 #endif

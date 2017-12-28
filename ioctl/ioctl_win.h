@@ -35,6 +35,7 @@ class Ioctl_Window : public Fl_Window
 {
 public:
 	Ioctl_Window();
+	~Ioctl_Window();
 
 	void add_log(wchar_t* wcs);
 
@@ -102,6 +103,6 @@ private:
 	static void device_cb(Fl_Widget* w, void* v);
 
 	/* popup */
-	Ioctl_Update* update;
+	Ioctl_Update* update_win;
 };
 

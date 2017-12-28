@@ -1,17 +1,21 @@
 #include "ioctl_table.h"
 #include "common.h"
 #include "FL\Fl_Menu_Button.H"
+#include "ioctl_win.h"
 
+char menu_update_line[buf_len];
 char menu_fuzz_sel[buf_len];
 
 Fl_Menu_Item pulldown[] = {
+	{ menu_update_line, FL_CTRL + 'u', Ioctl_Window::test_cb, 0, FL_MENU_DIVIDER },
 	{ menu_fuzz_sel },
 	{ "Fuzz &All",	FL_ALT + FL_SHIFT + 'f' },
 	{ 0 }
 };
 
-Ioctl_Table::Ioctl_Table(int x, int y, int w, int h, const char *l) 
-	:Fl_Table_Row(x, y, w, h, l)
+Ioctl_Table::Ioctl_Table(Ioctl_Window* parent, int x, int y, int w, int h, const char *l) 
+	:Fl_Table_Row(x, y, w, h, l),
+	parent(parent)
 {
 	end();
 	callback(&event_callback, (void*)this);
@@ -21,13 +25,19 @@ Ioctl_Table::Ioctl_Table(int x, int y, int w, int h, const char *l)
 	Fl_Menu_Button *mb = new Fl_Menu_Button(x, y+20, w, h-20);
 	mb->type(Fl_Menu_Button::POPUP3);
 	mb->box(FL_NO_BOX);
+
+	set_menu_label(menu_update_line, "编辑选中行");
 	set_menu_label(menu_fuzz_sel, "&Fuzz选中项");
+
 	for (int i = 0; i < sizeof(pulldown) / sizeof(pulldown[0]); i++)
 	{
 		pulldown[i].labelfont(FL_HELVETICA);
 		pulldown[i].labelsize(12);
+		pulldown[i].user_data(parent);
 	}
 	mb->menu(pulldown);
+
+	selected_row = -1;
 
 	type(SELECT_SINGLE);
 }
@@ -47,8 +57,8 @@ void Ioctl_Table::event_callback2()
 	printf("Row=%d Col=%d Context=%d Event=%d InteractiveResize? %d\n",
 		R, C, (int)context, (int)Fl::event(), (int)is_interactive_resize());
 
+	selected_row = R;
 	//printf("%d", row_scroll_position(R));
-
 }
 
 void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, int w, int h)

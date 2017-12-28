@@ -343,10 +343,10 @@ private:
 	}
 };
 
-
-int main(int argc, char* argv[])
-{
-	test_win window;
-	window.show(1, argv);
-	return Fl::run();
-}
+//
+//int main(int argc, char* argv[])
+//{
+//	test_win window;
+//	window.show(1, argv);
+//	return Fl::run();
+//}

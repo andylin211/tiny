@@ -5,7 +5,7 @@
 #include "FL\Fl_Input.H"
 #include "FL\Fl_Tooltip.H"
 #include "FL\Fl_File_Chooser.H"
-
+#include "ioctl_scan.h"
 //Scan_Window::Scan_Window()
 //	:Fl_Window(400, 300)
 //{
@@ -46,17 +46,32 @@ Fl_Menu_Item menu_table[] = {
 
 void Ioctl_Window::test_cb(Fl_Widget* o, void* v)
 {
-	Ioctl_Update update_win((Ioctl_Window*)v);
-	update_win.show();
-	while (update_win.visible()) {
+	/*Ioctl_Window* win = (Ioctl_Window*)v;
+	if (win->table->selected_row != -1)
+	{
+		if (win->table->itable && win->table->itable->v_line.size() > win->table->selected_row)
+		{
+			ioctl_line* line = win->table->itable->v_line.at(win->table->selected_row);
+			win->update_win->popup(line);
+			while (win->update_win->visible()) {
+				Fl::wait();
+			}
+		}
+	}	*/
+	Ioctl_Window* win = (Ioctl_Window*)v;
+	Ioctl_Fuzz f(win);
+	f.popup();
+	while (f.visible()) {
 		Fl::wait();
 	}
-	printf("sd");
 }
 
 Ioctl_Window::Ioctl_Window()
 	:Fl_Window(WIN_W, WIN_H)
 {
+	int x, y, w, h;
+	Fl::screen_work_area(x, y, w, h);
+	position(x+w/2-WIN_W/2, y+h/2-WIN_H/2);
 	Fl_Tooltip::font(FL_HELVETICA);
 	Fl_Tooltip::size(12);
 	Fl_Tooltip::color(0xfffff000);
@@ -73,8 +88,17 @@ Ioctl_Window::Ioctl_Window()
 	labelfont(FL_HELVETICA);
 	labelsize(12);
 	end();	
+
+	update_win = new Ioctl_Update(this);
+
 	//resizable(this);
 	//Fl::scheme("gtk+")
+}
+
+Ioctl_Window::~Ioctl_Window()
+{
+	if (update_win)
+		delete update_win;
 }
 
 void Ioctl_Window::set_menu_bar()
@@ -162,17 +186,17 @@ Fl_Button* Ioctl_Window::add_tool_button(char* label, char* tooltip, int res, in
 
 void Ioctl_Window::set_browser()
 {
-	browser = new Ioctl_Browser(0, menu_bar_height + tool_bar_height, browser_width, browser_height - 40);
+	browser = new Ioctl_Browser(0, menu_bar_height + tool_bar_height + 40, browser_width, browser_height - 40);
 	browser->set_top_window(this);
 	browser->callback(&Ioctl_Browser::call_back);
 
-	Fl_Box* b_dev = new Fl_Box(FL_UP_BOX, 0, menu_bar_height + tool_bar_height + browser_height - 40, browser_width, 20, "");
+	Fl_Box* b_dev = new Fl_Box(FL_UP_BOX, 0, menu_bar_height + tool_bar_height, browser_width, 20, "");
 	b_dev->copy_label(label_conv("设备名称"));
 	b_dev->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
 	b_dev->labelsize(12);
 	b_dev->labelfont(FL_HELVETICA);
 
-	device = new Fl_Input(0, menu_bar_height + tool_bar_height + browser_height - 20, browser_width, 20);
+	device = new Fl_Input(0, menu_bar_height + tool_bar_height + 20, browser_width, 20);
 	device->value(default_device_str);
 	device->textfont(FL_HELVETICA);
 	device->textsize(12);
@@ -187,7 +211,7 @@ void Ioctl_Window::set_table()
 	int y = tool_bar_height + menu_bar_height;
 	int w = width - browser_width;
 	int h = browser_height;
-	table = new Ioctl_Table(x, y, w, h);
+	table = new Ioctl_Table(this, x, y, w, h);
 	table->end();
 	table->col_header(1);	
 	table->cols(7);
@@ -364,8 +388,6 @@ int main(int argc, char* argv[])
 		MessageBox(NULL, L"实例已运行！", L"", MB_OK);
 		return 0;
 	}
-
-
 
 	Ioctl_Window window;
 

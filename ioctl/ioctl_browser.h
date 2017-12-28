@@ -20,23 +20,23 @@ public:
 	char* method;
 	char* inlen;
 	char* oulen;
-	ioctl_line(wchar_t* c, wchar_t* t, wchar_t* f, wchar_t* m, wchar_t* a, wchar_t* in, wchar_t* ou)
+	ioctl_line(wchar_t* c, char* t, wchar_t* f, char* m, char* a, wchar_t* in, wchar_t* ou)
 	{
 		code = wcs_to_str(c, -1, encoding_utf8);
-		type = wcs_to_str(t, -1, encoding_utf8);
+		type = t;
 		func = wcs_to_str(f, -1, encoding_utf8);
-		method = wcs_to_str(m, -1, encoding_utf8);
-		access = wcs_to_str(a, -1, encoding_utf8);
+		method = m;
+		access = a;
 		inlen = wcs_to_str(in, -1, encoding_utf8);
 		oulen = wcs_to_str(ou, -1, encoding_utf8);
 	}
 	~ioctl_line() 
 	{
 		free(code);
-		free(type);
+		//free(type);
 		free(func);
-		free(method);
-		free(access);
+		//free(method);
+		//free(access);
 		free(inlen);
 		free(oulen);
 	}

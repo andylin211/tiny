@@ -1,4 +1,6 @@
-TARGETNAME=hellosys
+TARGETNAME=enum_device
 TARGETTYPE=DRIVER
-SOURCES=hellosys.c
+#SOURCES=hellosys.c
+SOURCES=enum_device.cpp
+#SOURCES=enum_driver.cpp
 TARGETPATH=obj

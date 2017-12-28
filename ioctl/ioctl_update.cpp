@@ -146,11 +146,21 @@ char* type_hex_def[] = {
 	"0x0045",
 };
 
+static char read[buf_len];
+static char write[buf_len];
+static char any[buf_len];
+static char both[buf_len];
+
+static void buf_gbk_to_utf8(char* buf, char* src)
+{
+	fl_utf8from_mb(buf, buf_len, src, strlen(src));
+}
+
 char* access_str_def[] = {
-	"any",
-	"read",
-	"write",
-	"r|w",
+	any,
+	read,
+	write,
+	both
 };
 
 char* method_str_def[] = {
@@ -167,20 +177,95 @@ char* hex_str_0x[] = {
 	"0x3",
 };
 
+unsigned long make_ioctl_code(unsigned long device_type, unsigned long function, unsigned long method, unsigned long access)
+{
+	return (((device_type) << 16) | ((access) << 14) | ((function) << 2) | (method));
+}
+
+static int ctoi(char ch)
+{
+	if (ch >= '0' && ch <= '9')
+		return ch - '0';
+	if (ch >= 'a' && ch <= 'f')
+		return ch - 'a' + 10;
+	if (ch >= 'A' && ch <= 'F')
+		return ch - 'A' + 10;
+	return 0;
+}
+
+static int get_func(Fl_Slider** s)
+{
+	assert(s);
+	unsigned i = 0xf - (int)s[0]->value();
+	i = (i << 4) + 0xf - (int)s[1]->value();
+	i = (i << 4) + 0xf - (int)s[2]->value();
+	return i;
+}
+
+void Ioctl_Update::update_code()
+{
+	unsigned long code = make_ioctl_code(btype->value(), get_func(ifunc), bmethod->value() - 1, baccess->value() - 1);
+	sprintf(code_buf, "%x", code);
+	icode->value(code_buf);
+}
+
+void Ioctl_Update::update_component()
+{
+	const char* buf = icode->value();
+	unsigned long code = strtol(buf, 0, 16);
+	unsigned type = code >> 16;
+	unsigned access = code >> 14 & 0x3;
+	unsigned func = code >> 2 & 0xfff;
+	unsigned method = code & 0x3;
+	if (type > sizeof(type_str_def) / sizeof(type_str_def[0]))
+		type = FILE_DEVICE_UNKNOWN;
+	btype->value(type);
+	btype->do_callback();
+	baccess->value(access + 1);
+	baccess->do_callback();
+	bmethod->value(method + 1);
+	bmethod->do_callback();
+	ifunc[0]->value(0xf - ((func >> 8) & 0xf));
+	ifunc[1]->value(0xf - ((func >> 4) & 0xf));
+	ifunc[2]->value(0xf - (func & 0xf));
+	for (int i = 0; i < 3; i++)
+		ifunc[i]->do_callback();
+
+	update_code();
+}
+
+void Ioctl_Update::code_callback(Fl_Widget* o, void* v)
+{
+	Ioctl_Update* up = (Ioctl_Update*)v;
+	up->update_component();
+}
+
 void Ioctl_Update::type_callback(Fl_Widget* o, void* v)
 {
 	Ioctl_Update* up = (Ioctl_Update*)v;
+	if (!up->btype->value())
+		up->btype->value(up->type_last_value);
 	up->itype->label(type_hex_def[up->btype->value() - 1]);
+	up->update_code();
+	up->type_last_value = up->btype->value();
 }
 void Ioctl_Update::access_callback(Fl_Widget* o, void* v)
 {
 	Ioctl_Update* up = (Ioctl_Update*)v;
+	if (!up->baccess->value())
+		up->baccess->value(up->access_last_value);
 	up->iaccess->label(hex_str_0x[up->baccess->value() - 1]);
+	up->update_code();
+	up->access_last_value = up->baccess->value();
 }
 void Ioctl_Update::method_callback(Fl_Widget* o, void* v)
 {
 	Ioctl_Update* up = (Ioctl_Update*)v;
+	if (!up->bmethod->value())
+		up->bmethod->value(up->method_last_value);
 	up->imethod->label(hex_str_0x[up->bmethod->value() - 1]);
+	up->update_code();
+	up->method_last_value = up->bmethod->value();
 }
 
 void Ioctl_Update::ifunc_callback(int i)
@@ -192,27 +277,106 @@ void Ioctl_Update::ifunc_callback0(Fl_Widget* o, void* v)
 {
 	Ioctl_Update* up = (Ioctl_Update*)v;
 	up->ifunc_callback(0);
+	up->update_code();
 }
 void Ioctl_Update::ifunc_callback1(Fl_Widget* o, void* v)
 {
 	Ioctl_Update* up = (Ioctl_Update*)v;
 	up->ifunc_callback(1);
+	up->update_code();
 }
 void Ioctl_Update::ifunc_callback2(Fl_Widget* o, void* v)
 {
 	Ioctl_Update* up = (Ioctl_Update*)v;
 	up->ifunc_callback(2);
+	up->update_code();
 }
 
-Ioctl_Update::Ioctl_Update(Ioctl_Window* win, char* type, char* access, char* func, char* method, int inlen, int oulen)
+static void select_line(Fl_Hold_Browser* b, char* v)
+{
+	assert(b);
+	if (v)
+	{
+		for (int i = 1; i <= b->size(); i++)
+		{
+			if (!strcmp(b->text(i), v))
+			{
+				b->value(i);
+				break;
+			}
+		}
+	}
+}
+
+static void update_browser(Fl_Hold_Browser* b, int default_line = 0, char* v = 0)
+{
+	assert(b);
+	b->value(default_line);
+	select_line(b, v);
+	b->do_callback();
+}
+
+
+static void update_func(char* func, Fl_Slider** s)
+{
+	s[0]->value(7);
+	s[0]->value(0xf);
+	s[0]->value(0xf);
+	assert(s);
+	if (func && strlen(func) == 3)
+	{
+		for (int i = 0; i < 3; i++)
+			s[i]->value(0xf - ctoi(func[i]));
+	}
+	for (int i = 0; i < 3; i++)
+		s[i]->do_callback();
+}
+
+
+void Ioctl_Update::popup(ioctl_line* line)
+{
+	if (!line)
+		return;
+
+	btype->value(FILE_DEVICE_UNKNOWN);
+	if (line->type && strcmp(type_str_def[FILE_DEVICE_UNKNOWN - 1], line->type))// not unknown, rare
+		update_browser(btype, FILE_DEVICE_UNKNOWN, line->type);
+
+	update_browser(baccess, 0, line->access);
+	update_browser(bmethod, 0, line->method);
+
+	update_func(line->func, ifunc);
+
+	if (line->code)
+		icode->value(line->code);
+
+	if (line->inlen)
+		iinlen->value(line->inlen);
+	else
+		iinlen->value("0");
+
+	if (line->oulen)
+		ioulen->value(line->oulen);
+	else
+		ioulen->value("0");
+
+	show();
+}
+
+Ioctl_Update::Ioctl_Update(Ioctl_Window* win)
 	:Fl_Window(400,400,400,300)
 {
 	assert(win);
+	buf_gbk_to_utf8(read, "只读");
+	buf_gbk_to_utf8(write, "只写");
+	buf_gbk_to_utf8(any, "任意");
+	buf_gbk_to_utf8(both, "读写");
 	
 	width = 360;
 	height = 340;
 	resize(win->x() + win->w()/2 - width/2, win->y() + win->h()/2 - height/2, width, height);
 	set_modal();
+	hide();
 
 	Ioctl_Bmp* bmp = new Ioctl_Bmp(IDR_IOCTL_CODE);
 	Fl_Image *dergb;
@@ -238,7 +402,7 @@ Ioctl_Update::Ioctl_Update(Ioctl_Window* win, char* type, char* access, char* fu
 	btype->callback(type_callback, this);
 	btype->value(FILE_DEVICE_UNKNOWN);
 
-	x += w;
+	x += (w+5);
 	w = 40;
 	iaccess = new Fl_Box(x, y, w, 20);
 	set_label_font_12(iaccess);
@@ -292,29 +456,54 @@ Ioctl_Update::Ioctl_Update(Ioctl_Window* win, char* type, char* access, char* fu
 	bmethod->value(1);
 	bmethod->callback(method_callback, this);
 
-	icode = new Fl_Input(80, y + h + 20, 100, 20);
+	x = 80;
+	y = y + h + 20;
+	w = 100;
+	h = 20;
+	icode = new Fl_Input(x, y, w, h);
 	icode->copy_label(label_conv("控制码(hex):"));
 	set_label_font_12(icode);
 	set_text_font_12(icode);
+	//icode->callback(code_callback, this);
+	//icode->when(FL_WHEN_RELEASE);
+	b = new Fl_Box(x + w, y, w, h);
+	b->copy_label(label_conv("e.g. 22e0c4"));
+	set_label_font_12(b);
+	b->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
 	
-	iinlen = new Fl_Input(80, y + h + 50, 100, 20);
+	y += 30;
+	iinlen = new Fl_Input(x, y, w, h);
 	iinlen->copy_label(label_conv("字节数(In):"));
 	iinlen->type(FL_INT_INPUT);
-	ioulen = new Fl_Input(80, y + h + 80, 100, 20);
-	ioulen->copy_label(label_conv("字节数(Out):"));
-	ioulen->type(FL_INT_INPUT);
 	set_label_font_12(iinlen);
 	set_text_font_12(iinlen);
+	b = new Fl_Box(x + w, y, w, h);
+	b->copy_label(label_conv("e.g. 256"));
+	set_label_font_12(b);
+	b->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
+
+	y += 30;
+	ioulen = new Fl_Input(x, y, w, h);
+	ioulen->copy_label(label_conv("字节数(Out):"));
+	ioulen->type(FL_INT_INPUT);
 	set_label_font_12(ioulen);
 	set_text_font_12(ioulen);
+	b = new Fl_Box(x + w, y, w, h);
+	b->copy_label(label_conv("e.g. 256"));
+	set_label_font_12(b);
+	b->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
 
-	bok = new Fl_Return_Button(width - 90, height - 40, 80, 20);
+	bok = new Fl_Button(width - 90, height - 40, 80, 20);
 	bok->copy_label(label_conv("确定"));
 	set_label_font_12(bok);
 	bcancel = new Fl_Button(width - 90, height - 70, 80, 20);
 	bcancel->copy_label(label_conv("取消"));
 	set_label_font_12(bcancel);
 
+	btncode = new Fl_Return_Button(width - 90, height - 100, 80, 20);
+	btncode->copy_label(label_conv("刷新"));
+	set_label_font_12(btncode);
+	btncode->callback(code_callback, this);
 
 	copy_label(label_conv("更新行"));
 	end();
