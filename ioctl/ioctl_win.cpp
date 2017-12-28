@@ -46,7 +46,7 @@ Fl_Menu_Item menu_table[] = {
 
 void Ioctl_Window::test_cb(Fl_Widget* o, void* v)
 {
-	/*Ioctl_Window* win = (Ioctl_Window*)v;
+	Ioctl_Window* win = (Ioctl_Window*)v;
 	if (win->table->selected_row != -1)
 	{
 		if (win->table->itable && win->table->itable->v_line.size() > win->table->selected_row)
@@ -57,13 +57,13 @@ void Ioctl_Window::test_cb(Fl_Widget* o, void* v)
 				Fl::wait();
 			}
 		}
-	}	*/
-	Ioctl_Window* win = (Ioctl_Window*)v;
+	}	
+	/*Ioctl_Window* win = (Ioctl_Window*)v;
 	Ioctl_Fuzz f(win);
 	f.popup();
 	while (f.visible()) {
 		Fl::wait();
-	}
+	}*/
 }
 
 Ioctl_Window::Ioctl_Window()
@@ -165,10 +165,7 @@ Fl_Button* Ioctl_Window::add_tool_button(char* label, char* tooltip, int res, in
 	static int i = 0;
 	static int skip_ = 0;
 	Ioctl_Bmp* bmp = new Ioctl_Bmp(res);
-	Fl_Image *dergb;
-	dergb = bmp->copy();
-	dergb->inactive();
-	
+
 	if (skip)
 		skip_ += skip;
 
@@ -178,7 +175,6 @@ Fl_Button* Ioctl_Window::add_tool_button(char* label, char* tooltip, int res, in
 	//btn->copy_label(label_conv(label));
 	btn->copy_tooltip(label_conv(tooltip));
 	btn->image(bmp);
-	btn->deimage(dergb);
 	set_label_font_12(btn);
 	i++;
 	return btn;

@@ -1,20 +1,19 @@
 #include <Windows.h>
-#include <stdio.h>
-#include "NtDll.h"
-using namespace NT;
+#include <string>
 #pragma comment(lib, "ntdll.lib")
-
+#include "ntdll.h"
+using namespace NT;
 
 void enum_all_device()
 {
 	wchar_t* root = L"\\Device";
-	NT::NTSTATUS status = 0;
+	long status = 0;
 	UNICODE_STRING name;
 	OBJECT_ATTRIBUTES attr;
 	HANDLE hDirectory;
 	BOOLEAN firstEntry = TRUE;
 #define _max_device_count 256
-	NT::OBJECT_DIRECTORY_INFORMATION buffer[_max_device_count];
+	OBJECT_DIRECTORY_INFORMATION buffer[_max_device_count];
 	int i = 0;
 	int start = 0;
 	ULONG index = 0, bytes = 0;

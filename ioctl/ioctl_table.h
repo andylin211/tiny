@@ -38,4 +38,8 @@ public:
 	ioctl_table* itable;
 
 	Ioctl_Window* parent;
+
+	Fl_Button* btn;
+
+	Fl_Input* inp;
 };
