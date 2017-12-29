@@ -17,6 +17,10 @@ Ioctl_Table::Ioctl_Table(Ioctl_Window* parent, int x, int y, int w, int h, const
 	:Fl_Table_Row(x, y, w, h, l),
 	parent(parent)
 {
+	btn = new Fl_Button(-200, -200, 10, 10, "hello");
+	set_label_font_12(btn);
+	inp = new Fl_Input(-200, -200, 10, 10, "hello");
+	set_text_font_12(inp);
 	end();
 	callback(&event_callback, (void*)this);
 	col_resize(1);
@@ -59,6 +63,15 @@ void Ioctl_Table::event_callback2()
 
 	selected_row = R;
 	//printf("%d", row_scroll_position(R));
+	//if (C == 1 && R == 1)
+	//{
+	//	btn->show();
+	//}
+
+	//if (C == 1 && R == 3)
+	//{
+	//	inp->show();
+	//}
 }
 
 void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, int w, int h)
@@ -123,6 +136,18 @@ void Ioctl_Table::draw_cell(TableContext context, int r, int c, int x, int y, in
 
 	case CONTEXT_CELL:
 	{
+		if (r == 1 && c == 1)
+		{
+			btn->resize(x, y, w, h);
+			btn->hide();
+			//return;
+		}
+		if (r == 3 && c == 1)
+		{
+			inp->resize(x, y, w, h);
+			btn->hide();
+			//return;
+		}
 		fl_push_clip(x, y, w, h);
 		{
 			// BG COLOR

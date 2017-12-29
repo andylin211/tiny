@@ -456,44 +456,33 @@ Ioctl_Update::Ioctl_Update(Ioctl_Window* win)
 	bmethod->value(1);
 	bmethod->callback(method_callback, this);
 
-	x = 80;
+	x = 10;
 	y = y + h + 20;
-	w = 100;
+	w = (width - 10) / 3 - 10;
 	h = 20;
 	icode = new Fl_Input(x, y, w, h);
-	icode->copy_label(label_conv("控制码(hex):"));
+	icode->copy_label(label_conv("控制码(hex)"));
+	icode->align(FL_ALIGN_TOP);
 	set_label_font_12(icode);
 	set_text_font_12(icode);
-	//icode->callback(code_callback, this);
-	//icode->when(FL_WHEN_RELEASE);
-	b = new Fl_Box(x + w, y, w, h);
-	b->copy_label(label_conv("e.g. 22e0c4"));
-	set_label_font_12(b);
-	b->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
 	
-	y += 30;
+	x += w + 10;
 	iinlen = new Fl_Input(x, y, w, h);
-	iinlen->copy_label(label_conv("字节数(In):"));
+	iinlen->copy_label(label_conv("字节数(In)"));
+	iinlen->align(FL_ALIGN_TOP);
 	iinlen->type(FL_INT_INPUT);
 	set_label_font_12(iinlen);
 	set_text_font_12(iinlen);
-	b = new Fl_Box(x + w, y, w, h);
-	b->copy_label(label_conv("e.g. 256"));
-	set_label_font_12(b);
-	b->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
 
-	y += 30;
+	x += w + 10;
 	ioulen = new Fl_Input(x, y, w, h);
-	ioulen->copy_label(label_conv("字节数(Out):"));
+	ioulen->copy_label(label_conv("字节数(Out)"));
 	ioulen->type(FL_INT_INPUT);
+	ioulen->align(FL_ALIGN_TOP);
 	set_label_font_12(ioulen);
 	set_text_font_12(ioulen);
-	b = new Fl_Box(x + w, y, w, h);
-	b->copy_label(label_conv("e.g. 256"));
-	set_label_font_12(b);
-	b->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
 
-	bok = new Fl_Button(width - 90, height - 40, 80, 20);
+	/*bok = new Fl_Button(width - 90, height - 40, 80, 20);
 	bok->copy_label(label_conv("确定"));
 	set_label_font_12(bok);
 	bcancel = new Fl_Button(width - 90, height - 70, 80, 20);
@@ -504,7 +493,7 @@ Ioctl_Update::Ioctl_Update(Ioctl_Window* win)
 	btncode->copy_label(label_conv("刷新"));
 	set_label_font_12(btncode);
 	btncode->callback(code_callback, this);
-
+*/
 	copy_label(label_conv("更新行"));
 	end();
 }
