@@ -1,7 +1,7 @@
 #include <ntddk.h>
 
 #define BUFFER_SIZE 256
-#define MEM_TAG 'hell'
+#define MEM_TAG 'test'
 
 int t_strncpy(char* dst, char* src, int max_count)
 {
@@ -304,110 +304,98 @@ VOID TestRegistry()
 // global variables
 
 PDEVICE_OBJECT g_cdo = 0;
-UNICODE_STRING g_device_name = RTL_CONSTANT_STRING(L"\\Device\\hellosys_314159");
-UNICODE_STRING g_syblnk_name = RTL_CONSTANT_STRING(L"\\??\\hellosys_314159");
+UNICODE_STRING g_device_name = RTL_CONSTANT_STRING(L"\\Device\\testdev");
+UNICODE_STRING g_syblnk_name = RTL_CONSTANT_STRING(L"\\??\\testdev");
 
-#define ctl_dev_send_str \
-	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X811, METHOD_BUFFERED, FILE_WRITE_DATA | FILE_READ_DATA)
+// 222000
+#define ctl_800 \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X800, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
-#define ctl_dev_recv_str \
-	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X812, METHOD_BUFFERED, FILE_WRITE_DATA | FILE_READ_DATA)
+#define ctl_800a \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X800, METHOD_NEITHER, FILE_ANY_ACCESS)
 
-#define str_max_count 512
-typedef struct {
-	LIST_ENTRY list_entry;
-	char buffer[str_max_count];
-}str_node_t;
+// 0022E004
+#define ctl_801 \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X801, METHOD_BUFFERED, FILE_WRITE_ACCESS | FILE_READ_ACCESS)
 
-KSPIN_LOCK g_str_lock;
+// 0022A008
+#define ctl_802 \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X802, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 
-KEVENT g_str_event;
+#define ctl_803 \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X803, METHOD_BUFFERED, FILE_READ_ACCESS)
 
-LIST_ENTRY g_str_list;
+#define ctl_804 \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X804, METHOD_BUFFERED, FILE_WRITE_ACCESS | FILE_READ_ACCESS)
+
+#define ctl_805 \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X805, METHOD_BUFFERED, FILE_WRITE_ACCESS | FILE_READ_ACCESS)
+
+#define ctl_806 \
+	(ULONG)CTL_CODE(FILE_DEVICE_UNKNOWN, 0X806, METHOD_BUFFERED, FILE_WRITE_ACCESS | FILE_READ_ACCESS)
+
 
 NTSTATUS dispatch_func(IN PDEVICE_OBJECT dev, IN PIRP irp)
 {
-	NTSTATUS status = STATUS_SUCCESS;
+	NTSTATUS status = STATUS_INVALID_PARAMETER;
 	PIO_STACK_LOCATION irpsp = IoGetCurrentIrpStackLocation(irp);
 	ULONG ret_len = 0;
-	str_node_t* p_str_node = 0;
-
+	
 	do
 	{
 		if (dev != g_cdo)
 			break;
 
 		if (irpsp->MajorFunction == IRP_MJ_CREATE || irpsp->MajorFunction == IRP_MJ_CLOSE)
+		{
+			status = STATUS_SUCCESS;
 			break;
+		}
 		
 		if (irpsp->MajorFunction == IRP_MJ_DEVICE_CONTROL)
 		{
+			ULONG code = irpsp->Parameters.DeviceIoControl.IoControlCode;
 			PVOID buffer = irp->AssociatedIrp.SystemBuffer;
 			ULONG in_len = irpsp->Parameters.DeviceIoControl.InputBufferLength;
 			ULONG out_len = irpsp->Parameters.DeviceIoControl.OutputBufferLength;
 			ULONG len = 0;
 
-			switch (irpsp->Parameters.DeviceIoControl.IoControlCode)
+			DbgPrint("code=%X, inlen=%d, oulen=%d\n", code, in_len, out_len);
+
+			switch (code)
 			{
-			case ctl_dev_send_str:
-				//ASSERT(buffer != 0);
-				//ASSERT(in_len > 0);
-				//ASSERT(out_len == 0);
-				DbgPrint("buffer at 0x%x, strnlen = %d, in_len = %d, out_len = %d\r\n", buffer, t_strnlen((char*)buffer, str_max_count), in_len, out_len);
-				if (in_len > str_max_count)
-				{
-					status = STATUS_INVALID_PARAMETER;
-					break;
-				}
-				if (t_strnlen((char*)buffer, in_len) == in_len)
-				{
-					status = STATUS_INVALID_PARAMETER;
-					break;
-				}
-
-				/* crash when buffer does not end with 0 */
-				//DbgPrint((char*)buffer);
-				p_str_node = ExAllocatePoolWithTag(NonPagedPool, sizeof(str_node_t), MEM_TAG);
-				//_asm nop
-				if (!p_str_node)
-				{
-					status = STATUS_INSUFFICIENT_RESOURCES;
-					break;
-				}
-				t_strncpy(p_str_node->buffer, (char*)buffer, in_len);
-				ExInterlockedInsertTailList(&g_str_list, (PLIST_ENTRY)p_str_node, &g_str_lock);
-				//ExFreePool(p_str_node);
-				//
-				KeSetEvent(&g_str_event, 0, FALSE);
+			case ctl_800:
+			case ctl_800a:
+				status = STATUS_SUCCESS;
 				break;
-			case ctl_dev_recv_str:
-				//ASSERT(buffer != 0);
-				//ASSERT(in_len == 0);
-				//ASSERT(out_len > 0);
-				DbgPrint("in_len = %d, out_len = %d\r\n", in_len, out_len);
-				if (out_len > str_max_count)
+			case ctl_801:
+				if (out_len == 4)
+					status = STATUS_SUCCESS;
+				break;
+			case ctl_802:
+				if (in_len == 512 && out_len == 4)
 				{
-					status = STATUS_INVALID_PARAMETER;
-					break;
+					DbgPrint("ctl 802\n");
+					status = STATUS_SUCCESS;
 				}
-
-				while (1)
-				{
-					p_str_node = (str_node_t*)ExInterlockedRemoveHeadList(&g_str_list, &g_str_lock);
-					if (!p_str_node)
-						KeWaitForSingleObject(&g_str_event, Executive, KernelMode, 0, 0);
-					else
-					{
-						t_strncpy((char*)buffer, p_str_node->buffer, out_len);
-						ret_len = t_strnlen(p_str_node->buffer, out_len);
-						ExFreePool(p_str_node);
-						break;
-					}
-				}
-				
+				break;
+			case ctl_803:
+				if (in_len == 4 && out_len == 4)
+					status = STATUS_SUCCESS;
+				break;
+			case ctl_804:
+				if (in_len == 512)
+					status = STATUS_SUCCESS;
+				break;
+			case ctl_805:
+				if (out_len == 4)
+					status = STATUS_SUCCESS;
+				break;
+			case ctl_806:
+				if (out_len == 4)
+					status = STATUS_SUCCESS;
 				break;
 			default:
-				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
 		}
@@ -422,7 +410,6 @@ NTSTATUS dispatch_func(IN PDEVICE_OBJECT dev, IN PIRP irp)
 VOID unload_func(PDRIVER_OBJECT driver)
 {
 	NTSTATUS status = STATUS_SUCCESS;
-	str_node_t* p_str_node = 0;
 	HANDLE pid = PsGetCurrentProcessId();
 	DbgPrint("unloading...pid=%d\n", (USHORT)pid);
 	
@@ -430,15 +417,6 @@ VOID unload_func(PDRIVER_OBJECT driver)
 	DbgPrint("IoDeleteSymbolicLink %d", status);
 	ASSERT(g_cdo != 0);
 	IoDeleteDevice(g_cdo);
-
-	while (1)
-	{
-		p_str_node = (str_node_t*)ExInterlockedRemoveHeadList(&g_str_list, &g_str_lock);
-		if (p_str_node)
-			ExFreePool(p_str_node);
-		else
-			break;
-	}
 }
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT driver, PUNICODE_STRING reg_path)
@@ -452,11 +430,6 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT driver, PUNICODE_STRING reg_path)
 #if DBG
 	_asm nop
 #endif
-
-	KeInitializeEvent(&g_str_event, SynchronizationEvent, TRUE);
-	KeInitializeSpinLock(&g_str_lock);
-	InitializeListHead(&g_str_list);
-
 
 	status = IoCreateDevice(
 		driver,
@@ -492,7 +465,5 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT driver, PUNICODE_STRING reg_path)
 	TestFileOperation();
 	TestRegistry();
 */
-	
-
 	return STATUS_SUCCESS;
 }

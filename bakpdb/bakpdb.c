@@ -1,3 +1,4 @@
+#define define_tiny_here
 #include "tinylog.h"
 #include "tinystr.h"
 #include <assert.h>
@@ -5,6 +6,7 @@
 #include <Windows.h>
 #include <Shlwapi.h>
 #pragma comment(lib, "Shlwapi.lib")
+#pragma warning(disable:4996)
 
 void get_ext(wchar_t* file, wchar_t* ext)
 {
@@ -151,7 +153,7 @@ void back_up(wchar_t* sympath, wchar_t* file)
 
 	if (!PathFileExists(temp) && !CreateDirectory(temp, NULL))
 	{
-		tinylog(L"创建目录失败 %s", temp);
+		log_error(L"创建目录失败 %s", temp);
 		return;
 	}
 
@@ -159,7 +161,7 @@ void back_up(wchar_t* sympath, wchar_t* file)
 	wsprintf(temp, L"%s%s.pdb\\", temp, name);
 	if (!PathFileExists(temp) && !CreateDirectory(temp, NULL))
 	{
-		tinylog(L"创建目录失败 %s", temp);
+		log_error(L"创建目录失败 %s", temp);
 		return;
 	}
 
@@ -167,13 +169,13 @@ void back_up(wchar_t* sympath, wchar_t* file)
 	magic = read_pe_guid_and_magic(file, &guid);
 	if (magic == -1)
 	{
-		tinylog(L"获取guid失败 %s", file);
+		log_error(L"获取guid失败 %s", file);
 		return;
 	}
 
 	/* mkdir */
 	StringFromGUID2(&guid, str_guid, MAX_PATH);
-	tinylog(L"guid: %s, magic: %d", str_guid, magic);
+	log_print(L"guid: %s, magic: %d", str_guid, magic);
 	
 	wcs_remove(str_guid, L'{');
 	wcs_remove(str_guid, L'}');
@@ -181,7 +183,7 @@ void back_up(wchar_t* sympath, wchar_t* file)
 	wsprintf(temp, L"%s%s%x\\", temp, str_guid, magic);
 	if (!PathFileExists(temp) && !CreateDirectory(temp, NULL))
 	{
-		tinylog(L"创建目录失败 %s", temp);
+		log_error(L"创建目录失败 %s", temp);
 		return;
 	}
 
@@ -190,15 +192,15 @@ void back_up(wchar_t* sympath, wchar_t* file)
 	wsprintf(temp, L"%s%s.pdb", temp, name);
 	if (!CopyFileEx(pdb, temp, NULL, NULL, FALSE, COPY_FILE_RESTARTABLE))
 	{
-		tinylog(L"拷贝文件失败 %s -> %s", pdb, temp);
+		log_error(L"拷贝文件失败 %s -> %s", pdb, temp);
 		return;
 	}
 	else
 	{
-		tinylog(L"拷贝文件 %s -> %s", pdb, temp);
+		log_print(L"拷贝文件 %s -> %s", pdb, temp);
 	}
 
-	tinylog(L"备份完成!");
+	log_print(L"备份完成!");
 }
 
 int wmain(int argc, wchar_t** argv)
@@ -213,7 +215,7 @@ int wmain(int argc, wchar_t** argv)
 	}
 	else
 	{
-		tinylog(L"参数数量不对。用法： bakpdb.exe [C:\\Symbols] abc.sys");
+		log_error(L"参数数量不对。用法： bakpdb.exe [C:\\Symbols] abc.sys");
 	}
 
 	return 0;

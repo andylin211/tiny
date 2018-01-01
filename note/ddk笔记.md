@@ -133,8 +133,6 @@ sc create hellosys binPath= "c:\hellosys.sys" start= demand type= kernel
 sc start hellosys
 
 
-
-
 # 遍历驱动模块
 
 https://joychou.org/reverse/anti-debug-by-SOD.html
