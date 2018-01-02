@@ -105,28 +105,10 @@
     <ClCompile Include="virus.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\md5.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinyargs.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinykv.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinylist.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinylog.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinystr.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\tinyxml.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="virus_step.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

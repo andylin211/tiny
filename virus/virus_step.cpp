@@ -7,7 +7,7 @@
 #include "tinystr.h"
 #include "./../virus/resource.h"
 #include "tinyargs.h"
-#include "md5.h"
+#include "tinymd5.h"
 
 #define max_buf_len 512
 

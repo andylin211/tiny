@@ -119,7 +119,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;WIN32_LEAN_AND_MEAN;VC_EXTRA_LEAN;WIN32_EXTRA_LEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party/include;$(SolutionDir)core</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party/include;$(SolutionDir)tiny</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
@@ -184,13 +184,7 @@
     <Image Include="virus.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\core\md5.c" />
-    <ClCompile Include="..\core\tinyargs.c" />
-    <ClCompile Include="..\core\tinykv.c" />
-    <ClCompile Include="..\core\tinylist.c" />
-    <ClCompile Include="..\core\tinylog.c" />
-    <ClCompile Include="..\core\tinystr.c" />
-    <ClCompile Include="..\core\tinyxml.c" />
+    <ClCompile Include="tiny.c" />
     <ClCompile Include="virus.cpp" />
     <ClCompile Include="virus_step.cpp" />
   </ItemGroup>
