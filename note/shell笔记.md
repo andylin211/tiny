@@ -677,4 +677,124 @@ for (( i=0; i<5; i=i+1 )); do
 done
 ```
 
+## 自动清理tiny目录下编译目录
+
+```
+tbr="to_be_remove"
+tbrsh=$tbr".sh"
+find . -type d -name "Debug" > $tbr
+find . -type d -name "Release"  >> $tbr
+find . -type d -name "x64"  >> $tbr
+cat $tbr
+read -p "remvoe all?(y/n)" reply
+case $reply in
+	y) 	cat $tbr | sed 's/\(.*\)/rm -f -r \1/g' > $tbrsh
+		./$tbrsh
+		rm -f $tbr
+		rm -f $tbrsh
+		;;
+	*);;
+esac
+
+```
+
+
+## 生成uuid
+
+uuidgen
+
+## 自动生成一个vs2015项目的vcxproj文件
+
+
+ProjectGuid
+
+RootNamespace
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>__</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>__</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)include\tiny</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(SolutionDir)output/$(TargetName)$(TargetExt)</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
+```
+
+
+## shell.win32 有一些局限
+
+test表达式：[[ ]] 不支持
+
+设置PATH要这样设置`PATH='c:\tiny\shell'`，否则被认为是c和\tiny\shell两个路径；
+
+为了避免系统find.exe这些工具的干扰，`set PATH="c:\tiny\shell"`
+
+设置cmd的PATH变量
+设置bash的PATH环境变量
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
