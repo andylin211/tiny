@@ -9,9 +9,7 @@ void print(char* str, void*)
 
 int main(int argc, char** argv)
 {
-	exec_script("c:\\tiny\\shell\\bash.exe", "c:\\tiny\\script\\newproj.sh", "make", print, 0);
-	return 0;
-	/*Fl_Window win(400, 400, "Select I/O Control Code");
+	Fl_Window win(400, 400, "Select I/O Control Code");
 
 	toolbox_t tb;
 
@@ -24,5 +22,5 @@ int main(int argc, char** argv)
 	win.show(1, argv);
 
 	Fl::lock();
-	return Fl::run();*/
+	return Fl::run();
 }

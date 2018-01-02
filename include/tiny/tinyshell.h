@@ -10,7 +10,9 @@ extern "C" {
 
 	typedef void(*exec_script_callback)(char* str, void* data);
 
-	void exec_script(char* bash, char* script, char* args, exec_script_callback cb, void* data);
+	void exec_script_file(char* bash, char* script, char* args, exec_script_callback cb, void* data);
+
+	void exec_script_str(char* bash, char* script, exec_script_callback cb, void* data);
 
 #ifdef define_tiny_here
 
@@ -25,7 +27,7 @@ extern "C" {
 		return CreatePipe(read, write, &sa, 0);
 	}
 
-	static int create_process(char* cmd, HANDLE write, HANDLE* process)
+	static int create_process(char* cmd, HANDLE write, HANDLE read, HANDLE* process)
 	{
 		BOOL ret = 0;
 		STARTUPINFOA startup_info;
@@ -36,6 +38,7 @@ extern "C" {
 		startup_info.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
 		startup_info.hStdOutput = write;
 		startup_info.hStdError = write;
+		startup_info.hStdInput = read;
 		startup_info.wShowWindow = SW_HIDE;
 
 		ZeroMemory(&process_info, sizeof(process_info));
@@ -81,10 +84,13 @@ extern "C" {
 		return 1;
 	}
 
-	/*
-	 * 执行脚本，获取
-	 */
-	void exec_script(char* bash, char* script, char* args, exec_script_callback cb, void* data)
+	static void write_pipe(HANDLE write, char* str)
+	{
+		DWORD written = 0;
+		WriteFile(write, str, strlen(str), &written, 0);
+	}
+
+	void exec_script_file(char* bash, char* script, char* args, exec_script_callback cb, void* data)
 	{
 		char cmd[256];
 		wchar_t* wstr = 0;
@@ -102,7 +108,7 @@ extern "C" {
 			if (!create_pipe(&hread, &hwrite))
 				break;
 
-			if (!create_process(cmd, hwrite, &hprocess))
+			if (!create_process(cmd, hwrite, NULL, &hprocess))
 				break;
 			
 			do
@@ -132,6 +138,68 @@ extern "C" {
 
 		if (hwrite)
 			CloseHandle(hwrite);
+
+		if (hprocess)
+			CloseHandle(hprocess);
+	}
+
+	void exec_script_str(char* bash, char* script, exec_script_callback cb, void* data)
+	{
+		wchar_t* wstr = 0;
+		char* str = 0;
+		HANDLE hread = NULL;
+		HANDLE hwrite = NULL;
+		HANDLE hread1 = NULL;
+		HANDLE hwrite1 = NULL;
+		HANDLE hprocess = NULL;
+		char* buffer = 0;
+		int ret = 0;
+
+		do
+		{
+			if (!create_pipe(&hread, &hwrite))
+				break;
+
+			if (!create_pipe(&hread1, &hwrite1))
+				break;
+
+			write_pipe(hwrite1, script);
+
+			CloseHandle(hwrite1);
+
+			if (!create_process(bash, hwrite, hread1, &hprocess))
+				break;
+			
+			do
+			{
+				ret = read_pipe(hprocess, hread, &buffer);
+				if (buffer)
+				{
+					if (cb)
+					{
+						wstr = str_to_wcs(buffer, -1, encoding_ansi);
+						str = wcs_to_str(wstr, -1, encoding_utf8);
+						cb(str, data);
+						free(str);
+						free(wstr);
+					}
+					else
+						printf(buffer);
+
+					free(buffer);
+					buffer = 0;
+				}
+			} while (ret);
+		} while (0);
+
+		if (hwrite)
+			CloseHandle(hwrite);
+
+		if (hread)
+			CloseHandle(hread);
+
+		if (hread1)
+			CloseHandle(hread1);
 
 		if (hprocess)
 			CloseHandle(hprocess);

@@ -49,6 +49,7 @@ extern "C" {
 	int wcs_find_sub_from(wchar_t* string, wchar_t* sub, int from);
 	int wcs_find_sub_count(wchar_t* string, wchar_t* sub);
 	wchar_t* wcs_replace(wchar_t* string, wchar_t* sub, wchar_t* to);
+	int str_count(char* string, char ch);
 
 #ifdef define_tiny_here
 
@@ -653,6 +654,21 @@ extern "C" {
 		wcscat(buf, &string[pos]);
 
 		return buf;
+	}
+
+	int str_count(char* string, char ch)
+	{
+		int count = 0;
+		if (!string)
+			return 0;
+
+		while (*string)
+		{
+			if (ch == *string)
+				count++;
+			string++;
+		}
+		return count;
 	}
 #pragma warning(pop)
 
