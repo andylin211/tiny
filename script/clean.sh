@@ -12,6 +12,7 @@ tmp_sh="$tmp.sh"
 echo $tmp
 echo $tmp_sh
 
+
 find . -type d -name "include"
 
 find $tiny_dir -type d -name "Debug" -or \

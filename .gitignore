@@ -15,7 +15,6 @@ Release/
 *.bin
 *.aps
 *(密码123).zip
-*/temp/
 
 # Prerequisites
 *.d

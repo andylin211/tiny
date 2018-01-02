@@ -7,9 +7,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bmp_t.h" />
     <ClInclude Include="ctlcode.h" />
-    <ClInclude Include="misc.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

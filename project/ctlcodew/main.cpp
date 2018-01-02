@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
 	win.size(ctlcode.w(), ctlcode.h());
 
-	misc::make_screen_center(&win);
+	fltk_t::make_screen_center(&win);
 
 	win.end();
 

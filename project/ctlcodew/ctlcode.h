@@ -1,5 +1,5 @@
 #pragma once
-#include "misc.h"
+#include "tinyfltk.h"
 #include "resource.h"
 #include <assert.h>
 
@@ -9,7 +9,7 @@ public:
 	Fl_Input* icode;
 	Fl_Button* bupdate;
 	Fl_Button* bok;
-	char code_buf[misc::buf_len];
+	char code_buf[fltk_t::buf_len];
 
 	Fl_Box* itype;
 	Fl_Hold_Browser* btype;
@@ -36,30 +36,30 @@ public:
 	ctlcode_t(int x = 0, int y = 0, int w = 350, int h = 250)
 		:_x(x), _y(y), _w(w), _h(h)
 	{
-		misc::create_outbox(x + 5, y + 5, w - 10, 40);
+		fltk_t::create_outbox(x + 5, y + 5, w - 10, 40);
 		y += 15;
 		h -= 15;
-		icode = misc::create_input(x + 80, y, w - 120 - (x + 80) - 30, 20, "控制码(hex):");
+		icode = fltk_t::create_input(x + 80, y, w - 120 - (x + 80) - 30, 20, "控制码(hex):");
 		icode->value("00000000");
 		icode->maximum_size(8);
-		bupdate = misc::create_button(w - 140, y, 60, 20, "刷新", true);
+		bupdate = fltk_t::create_button(w - 140, y, 60, 20, "刷新", true);
 		bupdate->callback(update_callback, this);
-		bok = misc::create_button(w - 70, y, 60, 20, "确定");
+		bok = fltk_t::create_button(w - 70, y, 60, 20, "确定");
 		bok->callback(ok_callback, this);
 
 		y += 35;
 		h -= 35;
 
-		misc::create_outbox(x+5, y+5, w-10, h-10);
-		misc::create_imgbox(x+7, y+15, w-10, 50, IDR_CTL_CODE);
+		fltk_t::create_outbox(x+5, y+5, w-10, h-10);
+		fltk_t::create_imgbox(x+7, y+15, w-10, 50, IDR_CTL_CODE);
 		
 		x = x + 10;
 		w = 142;
 		y += 65;
 		h -= 65;
 
-		itype = misc::create_labelbox(x, y, w, 20, device_type_unknown_hex());
-		btype = misc::create_browser(x, y + 20, w, h - 30);
+		itype = fltk_t::create_labelbox(x, y, w, 20, device_type_unknown_hex());
+		btype = fltk_t::create_browser(x, y + 20, w, h - 30);
 		for (int i = 0; i < max_device_type; i++)
 			btype->add(device_type_str(i));
 		btype->callback(type_callback, this);
@@ -67,8 +67,8 @@ public:
 
 		x += (w + 5);
 		w = 40;
-		iaccess = misc::create_labelbox(x, y, w, 20, hex_str_0x(0));
-		baccess = misc::create_browser(x, y + 20, w, h - 30);
+		iaccess = fltk_t::create_labelbox(x, y, w, 20, hex_str_0x(0));
+		baccess = fltk_t::create_browser(x, y + 20, w, h - 30);
 		for (int i = 0; i < 4; i++)
 			baccess->add(access_str(i));
 		baccess->value(1);
@@ -76,10 +76,10 @@ public:
 
 		x += 70;
 		w = 7;
-		misc::create_labelbox(x - 2 * w, y, w * 2, 20, "0x");
-		ifunc[0] = misc::create_labelbox(x, y, w, 20, "0");
-		ifunc[1] = misc::create_labelbox(x + w, y, w, 20, "0");
-		ifunc[2] = misc::create_labelbox(x + 2 * w, y, w, 20, "0");
+		fltk_t::create_labelbox(x - 2 * w, y, w * 2, 20, "0x");
+		ifunc[0] = fltk_t::create_labelbox(x, y, w, 20, "0");
+		ifunc[1] = fltk_t::create_labelbox(x + w, y, w, 20, "0");
+		ifunc[2] = fltk_t::create_labelbox(x + 2 * w, y, w, 20, "0");
 		x -= 25;
 		w = 20;
 		sfunc[0] = new Fl_Slider(x, y + 20, w, h - 30);
@@ -100,8 +100,8 @@ public:
 
 		x += 3 * w + 5;
 		w = 66;
-		imethod = misc::create_labelbox(x, y, w, 20, hex_str_0x(0));
-		bmethod = misc::create_browser(x, y + 20, w, h - 30);
+		imethod = fltk_t::create_labelbox(x, y, w, 20, hex_str_0x(0));
+		bmethod = fltk_t::create_browser(x, y + 20, w, h - 30);
 		for (int i = 0; i < 4; i++)
 			bmethod->add(method_str(i));
 		bmethod->value(1);
@@ -231,7 +231,7 @@ public:
 	void update_code()
 	{
 		unsigned long code = make_ioctl_code(btype->value(), func_value, bmethod->value() - 1, baccess->value() - 1);
-		sprintf_s(code_buf, misc::buf_len, "%08X", code);
+		sprintf_s(code_buf, fltk_t::buf_len, "%08X", code);
 		icode->value(code_buf);
 	}
 

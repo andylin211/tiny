@@ -10,6 +10,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tiny.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\tiny\tinyshell.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="toolbox.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="toolbox.rc" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{60CF47CC-E126-47CD-9B9E-220E9FC30BC0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -48,7 +56,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)include\tiny;$(SolutionDir)include\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>

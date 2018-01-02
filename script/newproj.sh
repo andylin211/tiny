@@ -27,7 +27,7 @@ if [ ! -d "$project_dir" ]; then
 fi
 
 
-if [ ! -d "$project_dir" ]; then
+if [ ! -d "$new_dir" ]; then
     echo mkdir "$new_dir"
     mkdir "$new_dir"
 fi

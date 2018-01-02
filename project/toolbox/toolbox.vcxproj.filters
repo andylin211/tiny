@@ -4,4 +4,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tiny.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="toolbox.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\..\include\tiny\tinyshell.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="toolbox.rc" />
+  </ItemGroup>
 </Project>
