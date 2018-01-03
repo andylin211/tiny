@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-	typedef void(*exec_script_callback)(char* str, void* data);
+	typedef void(*exec_script_callback)(wchar_t* output, wchar_t* error, void* data);
 
 	void exec_script_file(char* bash, char* script, char* args, exec_script_callback cb, void* data);
 
@@ -27,7 +27,7 @@ extern "C" {
 		return CreatePipe(read, write, &sa, 0);
 	}
 
-	static int create_process(char* cmd, HANDLE write, HANDLE read, HANDLE* process)
+	static int create_process(char* cmd, HANDLE hwrite_output, HANDLE hwrite_error, HANDLE hread_input, HANDLE* process)
 	{
 		BOOL ret = 0;
 		STARTUPINFOA startup_info;
@@ -36,9 +36,9 @@ extern "C" {
 		ZeroMemory(&startup_info, sizeof(startup_info));
 		startup_info.cb = sizeof(startup_info);
 		startup_info.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-		startup_info.hStdOutput = write;
-		startup_info.hStdError = write;
-		startup_info.hStdInput = read;
+		startup_info.hStdOutput = hwrite_output;
+		startup_info.hStdError = hwrite_error;
+		startup_info.hStdInput = hread_input;
 		startup_info.wShowWindow = SW_HIDE;
 
 		ZeroMemory(&process_info, sizeof(process_info));
@@ -59,7 +59,7 @@ extern "C" {
 		return ret;
 	}
 
-	static int read_pipe(HANDLE process, HANDLE read, char** buffer)
+	static int read_pipe(HANDLE process, HANDLE hread, char** buffer)
 	{
 		DWORD nread = 0;
 		DWORD navail = 0;
@@ -68,13 +68,13 @@ extern "C" {
 		DWORD wait_ret = WaitForSingleObject(process, 10);
 
 		// 获取管道内可读内容大小
-		ret = PeekNamedPipe(read, NULL, 0, &nread, &navail, &nremain);
+		ret = PeekNamedPipe(hread, NULL, 0, &nread, &navail, &nremain);
 		if (ret && (navail != 0))
 		{
 			*buffer = (char*)safe_malloc(navail + 1);
 			ZeroMemory(*buffer, navail);
 
-			ReadFile(read, *buffer, navail, &nread, NULL);
+			ReadFile(hread, *buffer, navail, &nread, NULL);
 			(*buffer)[nread] = '\0';
 		}
 
@@ -84,60 +84,87 @@ extern "C" {
 		return 1;
 	}
 
-	static void write_pipe(HANDLE write, char* str)
+	static void write_pipe(HANDLE hwrite, char* buffer)
 	{
 		DWORD written = 0;
-		WriteFile(write, str, strlen(str), &written, 0);
+		WriteFile(hwrite, buffer, strlen(buffer), &written, 0);
 	}
 
-	void exec_script_file(char* bash, char* script, char* args, exec_script_callback cb, void* data)
+	static int response(HANDLE hprocess, HANDLE hread, int output, exec_script_callback cb, void* data)
+	{
+		char* str = 0;
+		wchar_t* wstr = 0;
+		char* buffer = 0;
+		int ret = read_pipe(hprocess, hread, &buffer);
+		if (buffer)
+		{
+			if (cb)
+			{
+				wstr = str_to_wcs(buffer, -1, encoding_ansi);
+				output ? cb(wstr, 0, data) : cb(0, wstr, data);
+				free(wstr);
+			}
+			else
+				fprintf(output ? stdout : stderr, buffer);
+
+			free(buffer);
+			buffer = 0;
+		}
+		return ret;
+	}
+
+	static int output_response(HANDLE hprocess, HANDLE hread, exec_script_callback cb, void* data)
+	{
+		return response(hprocess, hread, 1, cb, data);
+	}
+
+	static int error_response(HANDLE hprocess, HANDLE hread, exec_script_callback cb, void* data)
+	{
+		return response(hprocess, hread, 0, cb, data);
+	}
+
+	void exec_script_file(char* bash, char* file, char* args, exec_script_callback cb, void* data)
 	{
 		char cmd[256];
-		wchar_t* wstr = 0;
-		char* str = 0;
-		HANDLE hread = NULL;
-		HANDLE hwrite = NULL;
+		HANDLE hread_output = NULL;
+		HANDLE hwrite_output = NULL;
+		HANDLE hread_error = NULL;
+		HANDLE hwrite_error = NULL;
 		HANDLE hprocess = NULL;
-		char* buffer = 0;
-		int ret = 0;
+		int ret1 = 0;
+		int ret2 = 0;
 
-		str_format(cmd, 256, "\"%s\" \"%s\" \"%s\"", bash, script, args);
+		str_format(cmd, 256, "\"%s\" \"%s\" \"%s\"", bash, file, args);
 
 		do
 		{
-			if (!create_pipe(&hread, &hwrite))
+			if (!create_pipe(&hread_output, &hwrite_output))
 				break;
 
-			if (!create_process(cmd, hwrite, NULL, &hprocess))
+			if (!create_pipe(&hread_error, &hwrite_error))
+				break;
+
+			if (!create_process(cmd, hwrite_output, hwrite_error, NULL, &hprocess))
 				break;
 			
 			do
 			{
-				ret = read_pipe(hprocess, hread, &buffer);
-				if (buffer)
-				{
-					if (cb)
-					{
-						wstr = str_to_wcs(buffer, -1, encoding_ansi);
-						str = wcs_to_str(wstr, -1, encoding_utf8);
-						cb(str, data);
-						free(str);
-						free(wstr);
-					}
-					else
-						printf(buffer);
-
-					free(buffer);
-					buffer = 0;
-				}
-			} while (ret);
+				ret1 = output_response(hprocess, hread_output, cb, data);
+				ret2 = error_response(hprocess, hread_error, cb, data);
+			} while (ret1 || ret2);
 		} while (0);
 
-		if (hread)
-			CloseHandle(hread);
+		if (hread_output)
+			CloseHandle(hread_output);
 
-		if (hwrite)
-			CloseHandle(hwrite);
+		if (hread_error)
+			CloseHandle(hread_error);
+
+		if (hwrite_output)
+			CloseHandle(hwrite_output);
+
+		if (hwrite_error)
+			CloseHandle(hwrite_error);
 
 		if (hprocess)
 			CloseHandle(hprocess);
@@ -145,61 +172,55 @@ extern "C" {
 
 	void exec_script_str(char* bash, char* script, exec_script_callback cb, void* data)
 	{
-		wchar_t* wstr = 0;
-		char* str = 0;
-		HANDLE hread = NULL;
-		HANDLE hwrite = NULL;
-		HANDLE hread1 = NULL;
-		HANDLE hwrite1 = NULL;
+		HANDLE hread_output = NULL;
+		HANDLE hwrite_output = NULL;
+		HANDLE hread_error = NULL;
+		HANDLE hwrite_error = NULL;
+		HANDLE hread_input = NULL;
+		HANDLE hwrite_input = NULL;
 		HANDLE hprocess = NULL;
-		char* buffer = 0;
-		int ret = 0;
+		int ret1 = 0;
+		int ret2 = 0;
 
 		do
 		{
-			if (!create_pipe(&hread, &hwrite))
+			if (!create_pipe(&hread_output, &hwrite_output))
 				break;
 
-			if (!create_pipe(&hread1, &hwrite1))
+			if (!create_pipe(&hread_error, &hwrite_error))
 				break;
 
-			write_pipe(hwrite1, script);
+			if (!create_pipe(&hread_input, &hwrite_input))
+				break;
 
-			CloseHandle(hwrite1);
+			write_pipe(hwrite_input, script);
 
-			if (!create_process(bash, hwrite, hread1, &hprocess))
+			CloseHandle(hwrite_input);
+
+			if (!create_process(bash, hwrite_output, hwrite_error, hread_input, &hprocess))
 				break;
 			
 			do
 			{
-				ret = read_pipe(hprocess, hread, &buffer);
-				if (buffer)
-				{
-					if (cb)
-					{
-						wstr = str_to_wcs(buffer, -1, encoding_ansi);
-						str = wcs_to_str(wstr, -1, encoding_utf8);
-						cb(str, data);
-						free(str);
-						free(wstr);
-					}
-					else
-						printf(buffer);
-
-					free(buffer);
-					buffer = 0;
-				}
-			} while (ret);
+				ret1 = output_response(hprocess, hread_output, cb, data);
+				ret2 = error_response(hprocess, hread_error, cb, data);
+			} while (ret1 || ret2);
 		} while (0);
 
-		if (hwrite)
-			CloseHandle(hwrite);
+		if (hread_output)
+			CloseHandle(hread_output);
 
-		if (hread)
-			CloseHandle(hread);
+		if (hread_error)
+			CloseHandle(hread_error);
 
-		if (hread1)
-			CloseHandle(hread1);
+		if (hwrite_output)
+			CloseHandle(hwrite_output);
+
+		if (hwrite_error)
+			CloseHandle(hwrite_error);
+
+		if (hread_input)
+			CloseHandle(hread_input);
 
 		if (hprocess)
 			CloseHandle(hprocess);

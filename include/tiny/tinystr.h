@@ -37,6 +37,7 @@ extern "C" {
 	int wcs_find_from(wchar_t* string, wchar_t ch, int from);
 	int str_find_from(char* string, char ch, int from);
 	int str_rfind(char* string, char ch);
+	int wcs_rfind(wchar_t* string, wchar_t ch);
 	int wcs_rfind_from(wchar_t* string, wchar_t ch, int from);
 	wchar_t* wcs_erase(wchar_t* string, int from, int to);
 	char* str_erase(char* string, int from, int to);
@@ -50,6 +51,7 @@ extern "C" {
 	int wcs_find_sub_count(wchar_t* string, wchar_t* sub);
 	wchar_t* wcs_replace(wchar_t* string, wchar_t* sub, wchar_t* to);
 	int str_count(char* string, char ch);
+	int wcs_count(wchar_t* string, wchar_t ch);
 
 #ifdef define_tiny_here
 
@@ -312,11 +314,11 @@ extern "C" {
 	int wcs_find(wchar_t* string, wchar_t ch)
 	{
 		int i = 0;
-
+		int len = (int)wcslen(string);
 		if (!string)
 			return -1;
 
-		for (i = 0; i < (int)wcslen(string); i++)
+		for (i = 0; i < len; i++)
 		{
 			if (string[i] == ch)
 				return i;
@@ -328,11 +330,11 @@ extern "C" {
 	int str_find(char* string, char ch)
 	{
 		int i = 0;
-
+		int len = (int)strlen(string);
 		if (!string)
 			return -1;
 
-		for (i = 0; i < (int)strlen(string); i++)
+		for (i = 0; i < len; i++)
 		{
 			if (string[i] == ch)
 				return i;
@@ -344,11 +346,11 @@ extern "C" {
 	int wcs_find_from(wchar_t* string, wchar_t ch, int from)
 	{
 		int i = 0;
-
+		int len = (int)wcslen(string);
 		if (!string || from < 0)
 			return -1;
 
-		for (i = from; i < (int)wcslen(string); i++)
+		for (i = from; i < len; i++)
 		{
 			if (string[i] == ch)
 				return i;
@@ -360,11 +362,11 @@ extern "C" {
 	int str_find_from(char* string, char ch, int from)
 	{
 		int i = 0;
-
+		int len = (int)strlen(string);
 		if (!string || from < 0)
 			return -1;
 
-		for (i = from; i < (int)strlen(string); i++)
+		for (i = from; i < len; i++)
 		{
 			if (string[i] == ch)
 				return i;
@@ -657,6 +659,21 @@ extern "C" {
 	}
 
 	int str_count(char* string, char ch)
+	{
+		int count = 0;
+		if (!string)
+			return 0;
+
+		while (*string)
+		{
+			if (ch == *string)
+				count++;
+			string++;
+		}
+		return count;
+	}
+
+	int wcs_count(wchar_t* string, wchar_t ch)
 	{
 		int count = 0;
 		if (!string)
