@@ -133,6 +133,19 @@ style_parse(const char *text, char *style, int length)
 2. call_modify_callback()
 
 
+## Fl_Help_View加载html并显示
+
+view_ = new Fl_Help_View(10, 45, 510, 330);
+view_->box(FL_DOWN_BOX);
+view_->callback((Fl_Callback*)cb_view_);
+Fl_Group::current()->resizable(view_);
+
+view_->set_changed();
+view_->load(f);
+view_->title();
+
+
+
 
 
 

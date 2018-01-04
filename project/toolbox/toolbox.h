@@ -6,6 +6,8 @@
 #include "FL\Fl_Text_Editor.H"
 #include "FL\Fl_Text_Buffer.H"
 #include "FL\Fl_Text_Display.H"
+#include "FL\Fl_Help_View.H"
+#include "table.h"
 
 const int buf_len = 256;
 #define TS 14 // default editor textsize
@@ -129,8 +131,60 @@ public:
 			'A', style_unfinished_cb, 0);
 	}
 
+	void test2()
+	{
+		Fl_Help_View* view = new Fl_Help_View(0, 0, _w, _h);
+		view->load("C:/tiny/project/_old/virus/doc/virus_help_doc.html");
+		view->box(FL_DOWN_BOX);
+	}
+
+	void test3()
+	{
+		int ww = 300;
+		Fl_Input* inpu = new Fl_Input(5, 5, ww, 20);
+		Fl_Return_Button* butt = new Fl_Return_Button(ww + 10, 5, _w - 15 - ww, 20);
+		Fl_Hold_Browser* brow = new Fl_Hold_Browser(5, 30, ww, _h - 30);
+		
+		char str[buf_len];
+		do_script(str_format(str, buf_len, "gfind \"%s\" | grep '.sh$'", script_dir));
+
+		if (script_error)
+			wprintf(script_error);
+		if (!script_output)
+			return;
+		script.str = script_output;
+		script_output = 0;
+		script.count = wcs_count(script.str, L'\n');
+		script.file = (wchar_t**)safe_malloc(sizeof(wchar_t*) * script.count);
+		script.name = (wchar_t**)safe_malloc(sizeof(wchar_t*) * script.count);
+		int p = 0;
+		wchar_t* ss = script.str;
+		for (int i = 0; i < script.count; i++)
+		{
+			ss = &ss[p];
+			script.file[i] = ss;
+			p = wcs_find(ss, L'\n');
+			ss[p] = 0;
+			p++;
+			script.name[i] = &ss[wcs_rfind(script.file[i], L'/') + 1];
+
+			brow->add(wcs_to_str_tmp(script.name[i], -1, encoding_utf8));
+		}
+	}
+
+	void test4()
+	{
+		Fl_Input* inpu = new Fl_Input(2, 2, _w-4, 20);
+		inpu->textfont(FL_HELVETICA);
+		inpu->textsize(12);
+		Fl_Return_Button* butt = new Fl_Return_Button(_w + 2, 2, 58, 20);//Òþ²ØµÄ
+		
+		table_t* tabl = new table_t(0, 25, _w, _h-25);
+		
+	}
+
 public:
-	toolbox_t(int x = 0, int y = 0, int w = 350, int h = 350)
+	toolbox_t(int x = 0, int y = 0, int w = 400, int h = 300)
 		:_x(x), _y(y), _w(w), _h(h),
 		script_output(0),
 		buttons(0)
@@ -140,7 +194,7 @@ public:
 		strcpy_s(script_dir, buf_len, "c:/script");
 		strcpy_s(icon_dir, buf_len, "c:/icon");
 		//init();
-		test();
+		test4();
 	}
 
 	~toolbox_t()

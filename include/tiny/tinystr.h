@@ -52,6 +52,7 @@ extern "C" {
 	wchar_t* wcs_replace(wchar_t* string, wchar_t* sub, wchar_t* to);
 	int str_count(char* string, char ch);
 	int wcs_count(wchar_t* string, wchar_t ch);
+	char* gbk2utf8_tmp(char* string); /* not thread-safe */
 
 #ifdef define_tiny_here
 
@@ -686,6 +687,12 @@ extern "C" {
 			string++;
 		}
 		return count;
+	}
+
+	char* gbk2utf8_tmp(char* string)
+	{
+		wchar_t* wstr = str_to_wcs(string, -1, encoding_ansi);
+		return wcs_to_str_tmp(wstr, -1, encoding_utf8);
 	}
 #pragma warning(pop)
 

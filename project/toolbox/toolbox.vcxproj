@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\tiny\tinyshell.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="table.h" />
     <ClInclude Include="toolbox.h" />
   </ItemGroup>
   <ItemGroup>

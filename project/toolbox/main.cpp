@@ -9,7 +9,7 @@ void print(char* str, void*)
 
 int main(int argc, char** argv)
 {
-	Fl_Window win(400, 400, "Select I/O Control Code");
+	Fl_Window win(400, 400, "Simple Tool Box V0.1");
 
 	toolbox_t tb;
 

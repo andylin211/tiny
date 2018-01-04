@@ -8,6 +8,7 @@
     <ClInclude Include="toolbox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\include\tiny\tinyshell.h" />
+    <ClInclude Include="table.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="toolbox.rc" />
