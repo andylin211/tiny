@@ -7,39 +7,39 @@
 #include "FL\Fl_Text_Buffer.H"
 #include "FL\Fl_Text_Display.H"
 #include "FL\Fl_Help_View.H"
+#include "FL\Fl_Multiline_Output.H"
 #include "table.h"
 
+const int outp_height = 160;
 const int buf_len = 256;
-#define TS 14 // default editor textsize
-Fl_Text_Display::Style_Table_Entry styletable[] = {	// Style table
-	{ FL_BLACK,      FL_COURIER,           TS }, // A - Plain
-	{ FL_DARK_GREEN, FL_HELVETICA_ITALIC,  TS }, // B - Line comments
-	{ FL_DARK_GREEN, FL_HELVETICA_ITALIC,  TS }, // C - Block comments
-	{ FL_BLUE,       FL_COURIER,           TS }, // D - Strings
-	{ FL_DARK_RED,   FL_COURIER,           TS }, // E - Directives
-	{ FL_DARK_RED,   FL_COURIER_BOLD,      TS }, // F - Types
-	{ FL_BLUE,       FL_COURIER_BOLD,      TS }, // G - Keywords
+Fl_Text_Display::Style_Table_Entry styletable[] = {
+	{ 0xD0D0D000,	FL_COURIER,           12 }, // A - Plain
+	{ 0xE0000000,	FL_COURIER,           12 }, // B - Error
+	{ 0x00E00000,	FL_COURIER,           12 }, // C - Shell
 };
 
-class toolbox_t
+class toolbox_t: public Fl_Window
 {
 	int _x, _y, _w, _h;
 	wchar_t* script_output;
 	wchar_t* script_error;
-	struct {
-		int count;
-		wchar_t* str;
-		wchar_t** file;
-		wchar_t** name;
-	}script;
 	
-	Fl_Button** buttons;
-
+	char curr_dir[buf_len];
 	char bash_dir[buf_len];
 	char bash_path[buf_len];
 	char script_dir[buf_len];
-	char icon_dir[buf_len];
 
+	Fl_Input* inpu;
+	Fl_Return_Button* butt;
+	table_t* tabl;
+	Fl_Text_Buffer* tbuf;
+	Fl_Text_Buffer* sbuf;
+	Fl_Text_Display* outp;
+	enum {
+		output_plain = 0,
+		output_error,
+		output_shell,
+	}output_type;
 public:
 	int w() { return _w; }
 	int h() { return _h; }
@@ -78,131 +78,200 @@ public:
 	{
 		char str[buf_len];
 		clean_script();
+		shell(script);
 		str_format(str, buf_len, "PATH=\"c:/windows/system32;%s\"\n%s", bash_dir, script);
 		exec_script_str(bash_path, str, script_cb, this);
+		error(script_error);
+		output(script_output);
 	}
-	void init()
-	{
-		char str[buf_len];
-		do_script(str_format(str, buf_len, "gfind \"%s\" | grep '.sh$'", script_dir));
 
-		if (script_error)
-			wprintf(script_error);
-		if (!script_output)
+	char* read_raw_file(char* file)
+	{
+		FILE* fp = fopen(file, "rb");
+		fseek(fp, 0, SEEK_END);
+		int len = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+		char* buf = (char*)safe_malloc(len + 1);
+		fread(buf, len, 1, fp);
+		buf[len] = 0;
+		fclose(fp);
+		return buf;
+	}
+
+	void do_script_file(char* script)
+	{
+		char* buf = read_raw_file(script);
+		clean_script();
+		shell(str_format(buf, buf_len, "%s", buf));
+		exec_script_str(bash_path, buf, script_cb, this);
+		error(script_error);
+		output(script_output);
+		free(buf);
+	}
+
+	void init_data()
+	{
+		char buf[buf_len];
+		do_script(str_format(buf, buf_len, "find '%s' | grep '.sh$' | tee scripts.txt", "c:/script"));
+		do_script(str_format(buf, buf_len, "cat '%s/scripts.txt' | sed 's/\\(.*\\)/head \\1 -n 2/g' | tee get_name_desc.txt", curr_dir));
+		do_script_file("c:/tiny/test.sh");
+	}
+
+	static void inpu_cb(Fl_Widget*, void* v)
+	{
+		// 应该支持取消，否则响应不过来
+	}
+
+	static void butt_cb(Fl_Widget*, void* v)
+	{
+
+	}
+
+	static void tabl_cb(Fl_Widget*, void* v)
+	{
+
+	}
+
+	static void style_unfinished_cb(int, void*) 
+	{
+
+	}
+
+	void _output(char* str)
+	{
+		tbuf->append(str);
+		tbuf->call_modify_callbacks();
+		outp->scroll(tbuf->count_lines(0, tbuf->length()), 0);
+	}
+
+	void output(char* str)
+	{
+		if (!str)
 			return;
-		script.str = script_output;
-		script_output = 0;
-		script.count = wcs_count(script.str, L'\n');
-		script.file = (wchar_t**)safe_malloc(sizeof(wchar_t*) * script.count);
-		script.name = (wchar_t**)safe_malloc(sizeof(wchar_t*) * script.count);
-		buttons = (Fl_Button**)safe_malloc(sizeof(Fl_Button*)*script.count);
-		int p = 0;
-		wchar_t* ss = script.str;
-		for (int i = 0; i < script.count; i++)
-		{
-			ss = &ss[p];
-			script.file[i] = ss;
-			p = wcs_find(ss, L'\n');
-			ss[p] = 0;
-			p++;
-			script.name[i] = &ss[wcs_rfind(script.file[i], L'/') + 1];
-
-			buttons[i] = fltk_t::create_button(20, 100 * i + 20, 100, 100, 0);
-			buttons[i]->copy_label(wcs_to_str_tmp(script.name[i], -1, encoding_utf8));
-		}
+		output_type = output_plain;
+		_output(str);
 	}
 
-	static void style_unfinished_cb(int, void*) {}
-
-	void test()
+	void output(wchar_t* str)
 	{
-		Fl_Text_Buffer* textbuf = new Fl_Text_Buffer;
-		textbuf->text("hello world!!");
-
-		Fl_Text_Buffer* stylebuf = new Fl_Text_Buffer;
-		stylebuf->text("ABCDEFGAAAAAA");
-
-		Fl_Text_Editor* editor = new Fl_Text_Editor(0, 0, _w, _h);
-		editor->textsize(12);
-		editor->textfont(FL_HELVETICA);
-		editor->buffer(textbuf);
-
-		editor->highlight_data(stylebuf, styletable, sizeof(styletable) / sizeof(styletable[0]),
-			'A', style_unfinished_cb, 0);
-	}
-
-	void test2()
-	{
-		Fl_Help_View* view = new Fl_Help_View(0, 0, _w, _h);
-		view->load("C:/tiny/project/_old/virus/doc/virus_help_doc.html");
-		view->box(FL_DOWN_BOX);
-	}
-
-	void test3()
-	{
-		int ww = 300;
-		Fl_Input* inpu = new Fl_Input(5, 5, ww, 20);
-		Fl_Return_Button* butt = new Fl_Return_Button(ww + 10, 5, _w - 15 - ww, 20);
-		Fl_Hold_Browser* brow = new Fl_Hold_Browser(5, 30, ww, _h - 30);
-		
-		char str[buf_len];
-		do_script(str_format(str, buf_len, "gfind \"%s\" | grep '.sh$'", script_dir));
-
-		if (script_error)
-			wprintf(script_error);
-		if (!script_output)
+		if (!str)
 			return;
-		script.str = script_output;
-		script_output = 0;
-		script.count = wcs_count(script.str, L'\n');
-		script.file = (wchar_t**)safe_malloc(sizeof(wchar_t*) * script.count);
-		script.name = (wchar_t**)safe_malloc(sizeof(wchar_t*) * script.count);
-		int p = 0;
-		wchar_t* ss = script.str;
-		for (int i = 0; i < script.count; i++)
-		{
-			ss = &ss[p];
-			script.file[i] = ss;
-			p = wcs_find(ss, L'\n');
-			ss[p] = 0;
-			p++;
-			script.name[i] = &ss[wcs_rfind(script.file[i], L'/') + 1];
-
-			brow->add(wcs_to_str_tmp(script.name[i], -1, encoding_utf8));
-		}
+		char* s = wcs_to_str(str, -1, encoding_utf8);
+		output_type = output_plain;
+		_output(s);
+		free(s);
 	}
 
-	void test4()
+	void shell(char* str)
 	{
-		Fl_Input* inpu = new Fl_Input(2, 2, _w-4, 20);
+		char buf[buf_len];
+		if (!str)
+			return;
+		str_format(buf, buf_len, "$ %s\r\n", str);
+		output_type = output_shell;
+		_output(buf);
+	}
+
+	void error(char* str)
+	{
+		if (!str)
+			return;
+		output_type = output_error;
+		_output(str);
+	}
+
+	void error(wchar_t* str)
+	{
+		if (!str)
+			return;
+		char* s = wcs_to_str(str, -1, encoding_utf8);
+		output_type = output_error;
+		_output(s);
+		free(s);
+	}
+
+	void style_update(int pos, int ni)/*ninserted, ndeleted*/
+	{
+		if (ni == 0) {
+			sbuf->unselect();
+			return;
+		}
+
+		char* style = new char[ni + 1];
+		memset(style, 'A' + output_type, ni);
+		style[ni] = '\0';
+
+		sbuf->replace(pos, pos, style);
+		delete[] style;
+
+		outp->redisplay_range(pos, pos+ni);
+	}
+
+	static void style_update(int pos, int ninserted, int ndeleted, int /*nrestyled*/, const char* /*deletedtext*/, void* arg)
+	{
+		((toolbox_t*)arg)->style_update(pos, ninserted);
+	}
+	
+	void init_control()
+	{
+		inpu = new Fl_Input(2, 2, _w-4, 20);
+		inpu->box(FL_FLAT_BOX);
 		inpu->textfont(FL_HELVETICA);
 		inpu->textsize(12);
-		Fl_Return_Button* butt = new Fl_Return_Button(_w + 2, 2, 58, 20);//隐藏的
+		inpu->callback(inpu_cb, this);
+		inpu->when(FL_WHEN_CHANGED);
+
+		butt = new Fl_Return_Button(_w + 2, 2, 58, 20);//隐藏的
+		butt->callback(butt_cb, this);
 		
-		table_t* tabl = new table_t(0, 25, _w, _h-25);
-		
+		tabl = new table_t(0, 25, _w, _h - outp_height - 25);
+		tabl->cols(2);
+		tabl->dbclick_callback(tabl_cb, this);
+
+		tbuf = new Fl_Text_Buffer;
+		tbuf->add_modify_callback(style_update, this);
+
+		sbuf = new Fl_Text_Buffer;
+
+		outp = new Fl_Text_Display(0, _h - outp_height, _w, outp_height);
+		outp->color(FL_BLACK);
+		outp->box(FL_THIN_DOWN_BOX);
+		outp->textsize(12);
+		outp->textfont(FL_COURIER);
+		outp->textcolor(0xD0D0D000);
+		outp->buffer(tbuf);
+
+		outp->highlight_data(sbuf, styletable, sizeof(styletable) / sizeof(styletable[0]),
+			'A', style_unfinished_cb, 0);
+
+		resizable(tabl);
 	}
 
 public:
-	toolbox_t(int x = 0, int y = 0, int w = 400, int h = 300)
-		:_x(x), _y(y), _w(w), _h(h),
+	toolbox_t(int x = 0, int y = 0, int w = 400, int h = 400)
+		:Fl_Window(w, h, "ToolBox"),
+		_x(x), _y(y), _w(w), _h(h),
 		script_output(0),
-		buttons(0)
+		script_error(0)
 	{
+		fltk_t::make_screen_center(this);
+
+		GetModuleFileNameA(NULL, curr_dir, buf_len);
+		str_replace_char(curr_dir, '\\', '/');
+		str_erase(curr_dir, str_rfind(curr_dir, '/'), -1);
 		strcpy_s(bash_dir, buf_len, "c:/tiny/shell");
 		strcpy_s(bash_path, buf_len, "c:/tiny/shell/bash.exe");
 		strcpy_s(script_dir, buf_len, "c:/script");
-		strcpy_s(icon_dir, buf_len, "c:/icon");
-		//init();
-		test4();
+
+		init_control();
+
+		end();
+
+		init_data();
 	}
 
 	~toolbox_t()
 	{
-		free(script.str);
-		free(script.file);
-		free(script.name);
-		free(buttons);
 		clean_script();
 	}
 

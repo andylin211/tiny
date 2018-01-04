@@ -6,23 +6,30 @@
 #include <FL/Fl_Table_Row.H>
 #include "tinystr.h"
 #include "tinylog.h"
+#include <stdio.h>
 
 class table_t : public Fl_Table_Row
 {
+	Fl_Callback* dbclick_cb;
+	void* dbclick_data;
 public:
 	table_t(int x, int y, int w, int h, const char *l = 0) 
 		:Fl_Table_Row(x, y, w, h, l)
 	{
 		end();
 		callback(&event_callback, (void*)this);
-		//col_resize(1);
+		col_resize(1);
 		col_header(1);
 		type(SELECT_SINGLE);
-		cols(2);
-		rows(222);
 		col_width(0, 100);
 		col_width(1, w - 100-20);
 		row_height_all(20);
+	}
+
+	void dbclick_callback(Fl_Callback* cb, void* v)
+	{
+		dbclick_cb = cb;
+		dbclick_data = v;
 	}
 
 	//void update(ioctl_table* t);
@@ -39,7 +46,11 @@ private:
 	{
 		return (t_new - t_old);
 	}
-
+	void resize(int x, int y, int w, int h)
+	{
+		col_width(1, w - col_width(0)-20);
+		Fl_Table::resize(x, y, w, h);
+	}
 	void event_callback2()
 	{
 		static int last_r = -1;
@@ -57,7 +68,8 @@ private:
 			printf("%d\n", _ms);
 			if (_ms < 300 && last_c == C && last_r == R)
 			{
-				printf("DOUBLE CLICK!!!");
+				if (dbclick_cb)
+					dbclick_cb(this, dbclick_data);
 				memset(&last_t, 0, sizeof(last_t));
 				last_r = -1;
 				last_c = -1;
@@ -70,9 +82,8 @@ private:
 			}
 		}
 		
-		printf("'%s' callback: ", (label() ? label() : "?"));
-		printf("Row=%d Col=%d Context=%d Event=%d InteractiveResize? %d\n",
-			R, C, (int)context, (int)Fl::event(), (int)is_interactive_resize());
+		//printf("'%s' callback: ", (label() ? label() : "?"));
+		//printf("Row=%d Col=%d Context=%d Event=%d InteractiveResize? %d\n", R, C, (int)context, (int)Fl::event(), (int)is_interactive_resize());
 	}
 
 	void draw_cell(TableContext context, int r, int c, int x, int y, int w, int h)

@@ -50,9 +50,11 @@ extern "C" {
 	int wcs_find_sub_from(wchar_t* string, wchar_t* sub, int from);
 	int wcs_find_sub_count(wchar_t* string, wchar_t* sub);
 	wchar_t* wcs_replace(wchar_t* string, wchar_t* sub, wchar_t* to);
+	char* str_replace(char* string, char* sub, char* to);
 	int str_count(char* string, char ch);
 	int wcs_count(wchar_t* string, wchar_t ch);
 	char* gbk2utf8_tmp(char* string); /* not thread-safe */
+	void str_replace_char(char* string, char from, char to);
 
 #ifdef define_tiny_here
 
@@ -596,6 +598,31 @@ extern "C" {
 		return -1;
 	}
 
+	int str_find_sub_from(char* string, char* sub, int from)
+	{
+		int i = from;
+		int len = 0;
+
+		if (!string || !sub || from < 0)
+			return -1;
+
+		len = strlen(sub);
+
+		for (;;)
+		{
+			i = str_find_from(string, sub[0], i);
+			if (-1 == i)
+				break;
+
+			if (0 == strncmp(&string[i], sub, len))
+				return i;
+
+			i++;
+		}
+
+		return -1;
+	}
+
 	int wcs_find_sub_count(wchar_t* string, wchar_t* sub)
 	{
 		int i = 0;
@@ -610,6 +637,30 @@ extern "C" {
 		for (;;)
 		{
 			pos = wcs_find_sub_from(string, sub, pos);
+			if (-1 == pos)
+				break;
+
+			i++;
+			pos += len;
+		}
+
+		return i;
+	}
+
+	int str_find_sub_count(char* string, char* sub)
+	{
+		int i = 0;
+		int pos = 0;
+		int len = 0;
+
+		if (!string || !sub)
+			return 0;
+
+		len = strlen(sub);
+
+		for (;;)
+		{
+			pos = str_find_sub_from(string, sub, pos);
 			if (-1 == pos)
 				break;
 
@@ -659,6 +710,45 @@ extern "C" {
 		return buf;
 	}
 
+	char* str_replace(char* string, char* sub, char* to)
+	{
+		int i = 0;
+		int count = 0;
+		int len1 = 0;
+		int len2 = 0;
+		char* buf = 0;
+		int buf_len = 0;
+		int pos = 0;
+		int last_pos = 0;
+
+		if (!string || !sub || !to)
+			return 0;
+
+		len1 = strlen(sub);
+		len2 = strlen(to);
+
+		count = str_find_sub_count(string, sub);
+		if (!count)
+			return 0;
+
+		buf_len = strlen(string) + (len2 - len1) * count + 1;
+		buf = (char*)safe_malloc(sizeof(char) * buf_len);
+
+		for (i = 0; i < count; i++)
+		{
+			last_pos = pos;
+			pos = str_find_sub_from(string, sub, last_pos);
+
+			strncat(buf, &string[last_pos], pos - last_pos);
+			strcat(buf, to);
+
+			pos += len1;
+		}
+		strcat(buf, &string[pos]);
+
+		return buf;
+	}
+
 	int str_count(char* string, char ch)
 	{
 		int count = 0;
@@ -693,6 +783,16 @@ extern "C" {
 	{
 		wchar_t* wstr = str_to_wcs(string, -1, encoding_ansi);
 		return wcs_to_str_tmp(wstr, -1, encoding_utf8);
+	}
+
+	void str_replace_char(char* string, char from, char to)
+	{
+		while (*string)
+		{
+			if (*string == from)
+				*string = to;
+			string++;
+		}
 	}
 #pragma warning(pop)
 
