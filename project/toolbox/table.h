@@ -7,23 +7,37 @@
 #include "tinystr.h"
 #include "tinylog.h"
 #include <stdio.h>
+#include <vector>
 
 class table_t : public Fl_Table_Row
 {
 	Fl_Callback* dbclick_cb;
 	void* dbclick_data;
+	char* script_str;
+	std::vector<char*> vscript_str;
 public:
-	table_t(int x, int y, int w, int h, const char *l = 0) 
-		:Fl_Table_Row(x, y, w, h, l)
+	char* script_file;
+public:
+	table_t(int x, int y, int w, int h, const char *l = 0)
+		:Fl_Table_Row(x, y, w, h, l),
+		script_str(0),
+		script_file(0)
 	{
 		end();
 		callback(&event_callback, (void*)this);
 		col_resize(1);
 		col_header(1);
 		type(SELECT_SINGLE);
-		col_width(0, 100);
-		col_width(1, w - 100-20);
+		col_width(0, 160);
+		col_width(1, w - 160 - 20);
 		row_height_all(20);
+	}
+
+	~table_t()
+	{
+		free_data();
+		if (script_file)
+			free(script_file);
 	}
 
 	void dbclick_callback(Fl_Callback* cb, void* v)
@@ -32,9 +46,27 @@ public:
 		dbclick_data = v;
 	}
 
-	//void update(ioctl_table* t);
+	void update_data(std::vector<char*> vstr, char** str)
+	{
+		free_data();
+		script_str = *str;
+		vscript_str = vstr;
+		*str = 0;// table 负责释放
+		int nline = (int)vscript_str.size() / 3;
+		rows(nline);
+		redraw();
+	}
 
 private:
+	void free_data()
+	{
+		if (script_str)
+		{
+			free(script_str);
+			script_str = 0;
+		}
+	}
+
 	static void event_callback(Fl_Widget*, void*v)
 	{
 		table_t* t = (table_t*)v;
@@ -68,6 +100,10 @@ private:
 			printf("%d\n", _ms);
 			if (_ms < 300 && last_c == C && last_r == R)
 			{
+				if (script_file)
+					free(script_file);
+				
+				script_file = utf82gbk(vscript_str.at(R * 3 + 2));
 				if (dbclick_cb)
 					dbclick_cb(this, dbclick_data);
 				memset(&last_t, 0, sizeof(last_t));
@@ -113,6 +149,9 @@ private:
 				case 1:
 					fl_draw(gbk2utf8_tmp("描述"), x, y, w, h, FL_ALIGN_CENTER);
 					break;
+				case 2:
+					fl_draw(gbk2utf8_tmp("路径"), x, y, w, h, FL_ALIGN_CENTER);
+					break; 
 				default:
 					break;
 				}
@@ -141,7 +180,8 @@ private:
 
 				// TEXT
 				fl_color(fgcolor);
-				fl_draw(gbk2utf8_tmp("测试test"), x, y, w, h, FL_ALIGN_CENTER);
+				if ((int)vscript_str.size() > 3 * r + c)
+					fl_draw(vscript_str.at(3 * r + c), x+4, y, w-8, h, FL_ALIGN_LEFT);
 				
 				// BORDER
 				//fl_color(color());

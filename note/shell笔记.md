@@ -784,12 +784,27 @@ test表达式：[[ ]] 不支持
 
 
 
+## awk 
+
+```
+awk '{print $1, $4}' netstat.txt
+awk '{printf "%-8s %-8s %-8s %-18s %-22s %-15s\n",$1,$2,$3,$4,$5,$6}' netstat.txt
+awk '$3==0 && $6=="LISTEN" ' netstat.txt
+```
+
+将打印除第一列之外的所有内容：
+awk '{$1=""; print $0}' somefile
+将打印除两列外的所有列：
+awk '{$1=$2=""; print $0}' somefile
 
 
+## win-bash 
 
-
-
-
+为什么不知执行脚本文件呢，因为没有开始标志
+在文件头加这个
+```
+#
+```
 
 
 

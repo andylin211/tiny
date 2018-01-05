@@ -9,6 +9,7 @@
 #include "FL\Fl_Help_View.H"
 #include "FL\Fl_Multiline_Output.H"
 #include "table.h"
+#include <vector>
 
 const int outp_height = 160;
 const int buf_len = 256;
@@ -23,6 +24,8 @@ class toolbox_t: public Fl_Window
 	int _x, _y, _w, _h;
 	wchar_t* script_output;
 	wchar_t* script_error;
+	std::vector<char*> vscript_str;//utf8, \t, \r\n, \n
+	char* script_str;/* need free */
 	
 	char curr_dir[buf_len];
 	char bash_dir[buf_len];
@@ -40,6 +43,8 @@ class toolbox_t: public Fl_Window
 		output_error,
 		output_shell,
 	}output_type;
+
+
 public:
 	int w() { return _w; }
 	int h() { return _h; }
@@ -55,6 +60,12 @@ public:
 			free(script_output);
 			script_output = 0;
 		}
+		if (script_str)
+		{
+			free(script_str);
+			script_str = 0;
+		}
+		vscript_str.clear();
 	}
 	static void script_cb(wchar_t* output, wchar_t* error, void* data)
 	{
@@ -74,20 +85,56 @@ public:
 		}
 		
 	}
-	void do_script(char* script)
+	char* skip_token(char* p)
 	{
-		char str[buf_len];
+		while (*p)
+		{
+			if (*p == '\t' || *p == '\n')
+			{
+				*p++ = 0;
+				return p;
+			}
+			if (*p == '\r')
+			{
+				*p++ = 0;
+				*p++ = 0;
+				return p;
+			}
+			p++;
+		}
+		return p;
+	}
+	void update_vscript_str()
+	{
+		script_str = wcs_to_str(script_output, -1, encoding_utf8);
+		if (!script_str)
+			return;
+		char* p = script_str;
+		while (*p)
+		{
+			vscript_str.push_back(p);
+			p = skip_token(p);
+		}
+	}
+	void do_script(char* script, bool need_output=0)
+	{
+		if (!script)
+			return;
 		clean_script();
 		shell(script);
-		str_format(str, buf_len, "PATH=\"c:/windows/system32;%s\"\n%s", bash_dir, script);
-		exec_script_str(bash_path, str, script_cb, this);
+		char* buf = str_format_large("PATH=\"c:/windows/system32;%s\"\n%s", bash_dir, script);
+		exec_script_str(bash_path, buf, script_cb, this);
+		if (need_output)
+			update_vscript_str();
 		error(script_error);
 		output(script_output);
+		free(buf);
 	}
 
 	char* read_raw_file(char* file)
 	{
-		FILE* fp = fopen(file, "rb");
+		FILE* fp = 0;
+		fopen_s(&fp, file, "rb");
 		fseek(fp, 0, SEEK_END);
 		int len = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
@@ -98,28 +145,41 @@ public:
 		return buf;
 	}
 
-	void do_script_file(char* script)
+	void do_script_file(char* script, char* args=0, bool need_output=0)
 	{
-		char* buf = read_raw_file(script);
+		if (!script)
+			return;
 		clean_script();
-		shell(str_format(buf, buf_len, "%s", buf));
-		exec_script_str(bash_path, buf, script_cb, this);
+		shell(script);
+		exec_script_file(bash_path, script, args, script_cb, this);
+		if (need_output)
+			update_vscript_str();
 		error(script_error);
 		output(script_output);
-		free(buf);
+	}
+
+	static char* skip_line(char* p)
+	{
+		while (*p)
+		{
+			if (*p == '\n')
+				return ++p;
+			p++;
+		}
+		return p;
 	}
 
 	void init_data()
 	{
-		char buf[buf_len];
-		do_script(str_format(buf, buf_len, "find '%s' | grep '.sh$' | tee scripts.txt", "c:/script"));
-		do_script(str_format(buf, buf_len, "cat '%s/scripts.txt' | sed 's/\\(.*\\)/head \\1 -n 2/g' | tee get_name_desc.txt", curr_dir));
-		do_script_file("c:/tiny/test.sh");
+ 		do_script_file("c:/test1.sh", "", true);
+		tabl->update_data(vscript_str, &script_str);
 	}
 
 	static void inpu_cb(Fl_Widget*, void* v)
 	{
-		// 应该支持取消，否则响应不过来
+		toolbox_t* tb = (toolbox_t*)v;
+		tb->do_script_file("c:/test2.sh", utf82gbk_tmp((char*)tb->inpu->value()), true);
+		tb->tabl->update_data(tb->vscript_str, &tb->script_str);
 	}
 
 	static void butt_cb(Fl_Widget*, void* v)
@@ -129,7 +189,8 @@ public:
 
 	static void tabl_cb(Fl_Widget*, void* v)
 	{
-
+		toolbox_t* tb = (toolbox_t*)v;
+		tb->do_script_file(tb->tabl->script_file);
 	}
 
 	static void style_unfinished_cb(int, void*) 
@@ -164,12 +225,15 @@ public:
 
 	void shell(char* str)
 	{
-		char buf[buf_len];
+		char* buf = 0;
 		if (!str)
 			return;
-		str_format(buf, buf_len, "$ %s\r\n", str);
+		buf = str_format_large("$ %s\r\n", str);
+		char* tmp = gbk2utf8(buf);
 		output_type = output_shell;
-		_output(buf);
+		_output(tmp);
+		free(tmp);
+		free(buf);
 	}
 
 	void error(char* str)
@@ -248,11 +312,12 @@ public:
 	}
 
 public:
-	toolbox_t(int x = 0, int y = 0, int w = 400, int h = 400)
+	toolbox_t(int x = 0, int y = 0, int w = 600, int h = 400)
 		:Fl_Window(w, h, "ToolBox"),
 		_x(x), _y(y), _w(w), _h(h),
 		script_output(0),
-		script_error(0)
+		script_error(0),
+		script_str(0)
 	{
 		fltk_t::make_screen_center(this);
 
@@ -274,8 +339,6 @@ public:
 	{
 		clean_script();
 	}
-
-
 };
 
 

@@ -54,7 +54,11 @@ extern "C" {
 	int str_count(char* string, char ch);
 	int wcs_count(wchar_t* string, wchar_t ch);
 	char* gbk2utf8_tmp(char* string); /* not thread-safe */
+	char* gbk2utf8(char* string);
+	char* utf82gbk_tmp(char* string); /* not thread-safe */
+	char* utf82gbk(char* string);
 	void str_replace_char(char* string, char from, char to);
+	void wcs_replace_char(wchar_t* string, wchar_t from, wchar_t to);
 
 #ifdef define_tiny_here
 
@@ -785,7 +789,35 @@ extern "C" {
 		return wcs_to_str_tmp(wstr, -1, encoding_utf8);
 	}
 
+	char* utf82gbk_tmp(char* string)
+	{
+		wchar_t* wstr = str_to_wcs(string, -1, encoding_utf8);
+		return wcs_to_str_tmp(wstr, -1, encoding_ansi);
+	}
+
+	char* gbk2utf8(char* string)
+	{
+		wchar_t* wstr = str_to_wcs(string, -1, encoding_ansi);
+		return wcs_to_str(wstr, -1, encoding_utf8);
+	}
+
+	char* utf82gbk(char* string)
+	{
+		wchar_t* wstr = str_to_wcs(string, -1, encoding_utf8);
+		return wcs_to_str(wstr, -1, encoding_ansi);
+	}
+
 	void str_replace_char(char* string, char from, char to)
+	{
+		while (*string)
+		{
+			if (*string == from)
+				*string = to;
+			string++;
+		}
+	}
+
+	void wcs_replace_char(wchar_t* string, wchar_t from, wchar_t to)
 	{
 		while (*string)
 		{
