@@ -177,14 +177,14 @@ public:
 
 	static void inpu_cb(Fl_Widget*, void* v)
 	{
-		toolbox_t* tb = (toolbox_t*)v;
-		tb->do_script_file("c:/test2.sh", utf82gbk_tmp((char*)tb->inpu->value()), true);
-		tb->tabl->update_data(tb->vscript_str, &tb->script_str);
+		
 	}
 
 	static void butt_cb(Fl_Widget*, void* v)
 	{
-
+		toolbox_t* tb = (toolbox_t*)v;
+		tb->do_script_file("c:/test2.sh", utf82gbk_tmp((char*)tb->inpu->value()), true);
+		tb->tabl->update_data(tb->vscript_str, &tb->script_str);
 	}
 
 	static void tabl_cb(Fl_Widget*, void* v)
@@ -278,18 +278,18 @@ public:
 	
 	void init_control()
 	{
-		inpu = new Fl_Input(2, 2, _w-4, 20);
+		inpu = new Fl_Input(2, 2, _w-44, 20);
 		inpu->box(FL_FLAT_BOX);
 		inpu->textfont(FL_HELVETICA);
 		inpu->textsize(12);
 		inpu->callback(inpu_cb, this);
 		inpu->when(FL_WHEN_CHANGED);
 
-		butt = new Fl_Return_Button(_w + 2, 2, 58, 20);//Òþ²ØµÄ
+		butt = new Fl_Return_Button(_w - 40, 2, 40, 20);
 		butt->callback(butt_cb, this);
+		butt->box(FL_GTK_THIN_UP_BOX);
 		
-		tabl = new table_t(0, 25, _w, _h - outp_height - 25);
-		tabl->cols(2);
+		tabl = new table_t(0, 25, _w, _h - outp_height - 25);		
 		tabl->dbclick_callback(tabl_cb, this);
 
 		tbuf = new Fl_Text_Buffer;
@@ -313,7 +313,7 @@ public:
 
 public:
 	toolbox_t(int x = 0, int y = 0, int w = 600, int h = 400)
-		:Fl_Window(w, h, "ToolBox"),
+		:Fl_Window(w, h, "ToolBox V0.1"),
 		_x(x), _y(y), _w(w), _h(h),
 		script_output(0),
 		script_error(0),

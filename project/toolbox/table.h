@@ -28,9 +28,11 @@ public:
 		col_resize(1);
 		col_header(1);
 		type(SELECT_SINGLE);
-		col_width(0, 160);
-		col_width(1, w - 160 - 20);
+		col_width(0, 200);
+		col_width(1, 300);
+		col_width(2, w - col_width(0) - col_width(1) - 20);
 		row_height_all(20);
+		cols(3);
 	}
 
 	~table_t()
@@ -80,7 +82,8 @@ private:
 	}
 	void resize(int x, int y, int w, int h)
 	{
-		col_width(1, w - col_width(0)-20);
+		//col_width(1, w - col_width(0) - col_width(2) - 20);
+		col_width(2, w -col_width(1) - col_width(0) - 20);
 		Fl_Table::resize(x, y, w, h);
 	}
 	void event_callback2()
@@ -94,7 +97,7 @@ private:
 		int R = callback_row(),
 			C = callback_col();
 		TableContext context = callback_context();
-		if (Fl::event() == 2)
+		if (Fl::event() == 2 && CONTEXT_CELL == context)
 		{
 			int _ms = _gap_ms(t, last_t);
 			printf("%d\n", _ms);
@@ -118,8 +121,7 @@ private:
 			}
 		}
 		
-		//printf("'%s' callback: ", (label() ? label() : "?"));
-		//printf("Row=%d Col=%d Context=%d Event=%d InteractiveResize? %d\n", R, C, (int)context, (int)Fl::event(), (int)is_interactive_resize());
+		printf("Row=%d Col=%d Context=%d Event=%d InteractiveResize? %d\n", R, C, (int)context, (int)Fl::event(), (int)is_interactive_resize());
 	}
 
 	void draw_cell(TableContext context, int r, int c, int x, int y, int w, int h)
@@ -127,14 +129,11 @@ private:
 		static char s[40];
 		sprintf_s(s, 40, "%d/%d", r, c);		// text for each cell
 		Fl_Color bgcolor = FL_WHITE;
+		Fl_Color bgcolor1 = 0xF8F8F800;
 		Fl_Color fgcolor = FL_BLACK;
 
 		switch (context)
 		{
-		case CONTEXT_STARTPAGE:
-			fl_font(FL_HELVETICA, 12);
-			return;
-
 		case CONTEXT_COL_HEADER:
 			fl_push_clip(x, y, w, h);
 			{
@@ -158,26 +157,20 @@ private:
 
 			}
 			fl_pop_clip();
-			return;
-
-		case CONTEXT_ROW_HEADER:
-			fl_push_clip(x, y, w, h);
-			{
-				fl_draw_box(FL_THIN_UP_BOX, x, y, w, h, row_header_color());
-				fl_color(FL_BLACK);
-				fl_draw(s, x, y, w, h, FL_ALIGN_CENTER);
-			}
-			fl_pop_clip();
-			return;
-
+			break;
 		case CONTEXT_CELL:
 		{
 			fl_push_clip(x, y, w, h);
 			{
 				// BG COLOR
-				fl_color(row_selected(r) ? selection_color() : bgcolor);
+				if (c == 0)
+					fl_color(row_selected(r) ? selection_color() : bgcolor1);
+				else
+					fl_color(row_selected(r) ? selection_color() : bgcolor);
+				
 				fl_rectf(x, y, w, h);
 
+				fl_font(FL_HELVETICA, 12);
 				// TEXT
 				fl_color(fgcolor);
 				if ((int)vscript_str.size() > 3 * r + c)
@@ -188,17 +181,16 @@ private:
 				//fl_rect(x, y, w, h);
 			}
 			fl_pop_clip();
-			return;
+			break;
 		}
-
+		case CONTEXT_STARTPAGE:
+		case CONTEXT_ROW_HEADER:
 		case CONTEXT_TABLE:
-			fprintf(stderr, "TABLE CONTEXT CALLED\n");
-			return;
-
 		case CONTEXT_ENDPAGE:
 		case CONTEXT_RC_RESIZE:
 		case CONTEXT_NONE:
-			return;
+		default:
+			break;
 		}
 	}
 };
