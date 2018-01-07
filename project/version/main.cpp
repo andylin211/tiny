@@ -1,110 +1,282 @@
-#include <tchar.h>
-#include <Windows.h>  
-#include <stdio.h>
+#include "tiny.h"
+#include "tinylog.h"
+#include "tinyopt.h"
+#include "tinysys.h"
 #pragma comment(lib, "version")
+#pragma comment(lib, "shlwapi.lib")
 
-typedef struct _tagLanguage
+static char temp[256];
+static char curr[256];
+
+void usage()
 {
-	WORD wLanguage;
-	WORD wCodePage;
-} tagLanguage, *LPLanguage;
+	char* usage_str = ""
+		"                                                                           \r\n"
+		"Usage: version.exe -f fullpath [-v a.b.c.d] [-h]                           \r\n"
+		"                                                                           \r\n"
+		"    -f    specify file with full path                                      \r\n"
+		"    -v    if set then write or modify; if not set then just read.          \r\n"
+		"    -h    show this usage                                                  \r\n"
+		"                                                                           \r\n";
+	log_printa(usage_str);
+}
 
-
-
-int _tmain(int argc, _TCHAR* argv[])
+void compile(char* rc_file, char* res_file)
 {
-	if (argc != 3)
+	char path[256];
+	char args[256];
+
+	if (!rc_file || !res_file)
+		return;
+
+
+	str_format(path, 256, "%s/rc.exe", curr);
+	str_format(args, 256, "/l 0x409 /fo \"%s\" %s", res_file, rc_file);
+
+	if (!PathFileExistsA(path))
 	{
-		return 0;
+		log_errora("cannot find rc.exe, which should be at the same directory: %s", curr);
+		return;
 	}
+		
+	launch(path, args, 1);
+}
 
-	TCHAR* FileName = argv[1];
-	TCHAR* Version = argv[2];
+void prepare(char* rc_file, char* version)
+{
+	char format[] = {
+		"VS_VERSION_INFO VERSIONINFO\r\n"
+		"FILEVERSION %d,%d,%d,%d\r\n"
+		"BEGIN\r\n"
+		"BLOCK \"VarFileInfo\"\r\n"
+		"BEGIN\r\n"
+		"VALUE \"Translation\", 0x409, 0x4E4\r\n"
+		"END\r\n"
+		"BLOCK \"StringFileInfo\"\r\n"
+		"BEGIN\r\n"
+		"BLOCK \"040904E4\"\r\n"
+		"BEGIN\r\n"
+		"VALUE \"FileVersion\", \"%s\"\r\n"
+		"END\r\n"
+		"END\r\n"
+		"END\r\n"
+	};
+	char buf[1024];
+	int ms1, ms2, ls1, ls2;
 
-	DWORD dwVerHnd = 0;
-	//先获取整个文件版本信息的大小  
-	DWORD dwVerInfoSize = GetFileVersionInfoSize(FileName, &dwVerHnd);
-	//根据大小来申请内存  
-	TCHAR *VerInfo = new TCHAR[dwVerInfoSize];
-	//获取文件版本信息，这些信息存在刚刚申请的内存中，修改版本信息通过直接修改内存后一次性将版本信息更新  
-	BOOL res = GetFileVersionInfo(FileName, 0, dwVerInfoSize, VerInfo);
-	if (!res)
+	if (!rc_file || !version)
+		return;
+	
+	sscanf_s(version, "%d.%d.%d.%d", &ms1, &ms2, &ls1, &ls2);
+
+	str_format(buf, 1024, format, ms1, ms2, ls1, ls2, version);
+	write_raw_file(rc_file, buf, strlen(buf));
+}
+
+void read_version(char* file)
+{
+	unsigned size = 0;
+	char* buf = 0;
+	VS_FIXEDFILEINFO* info = 0;
+	short ms1, ms2, ls1, ls2;
+
+	if (!file)
+		return;
+
+	do
 	{
-		delete[]VerInfo;
-		return 0;
-	}
-
-	//首先在获取的版本信息中读取语言信息，因为修改版本信息需要用到  
-	LPLanguage language = NULL;
-	UINT size = 0;
-	VerQueryValue(VerInfo, _T("\\VarFileInfo\\Translation"), (LPVOID*)&language, &size);
-
-	//读取文件版本信息  
-	VS_FIXEDFILEINFO*  FixedFileInfo = NULL;
-	VerQueryValue(VerInfo, _T("\\"), (LPVOID*)&FixedFileInfo, &size);
-	TCHAR TempBuf[MAX_PATH] = { 0 };
-	if (FixedFileInfo)
-	{
-		//修改文件版本信息的版本号，这里通过CVersion 类的分别获取数字“1234”，“456”，“789”，“1110”  
-		//这里需要将高位与低位组合   12.1.123.32
-		FixedFileInfo->dwFileVersionMS = MAKELONG(8, 2017);
-		FixedFileInfo->dwFileVersionLS = MAKELONG(121, 3);
-
-
-		//FixedFileInfo->dwProductVersionMS = MAKELONG(1, 12);
-		//FixedFileInfo->dwProductVersionMS = MAKELONG(32, 123);2017.8.3.0121
-
-	}
-
-	////读取StringFileInfo中的信息信息  
-	//TCHAR *ProductVer = NULL;
-	//TCHAR *FileVer = NULL;
-	//_stprintf_s(TempBuf, _T("\\StringFileInfo\\%04x%04x\\FileVersion"), language->wLanguage, language->wCodePage);
-	//VerQueryValue(VerInfo, TempBuf, (LPVOID*)&FileVer, &size);
-	//_stprintf_s(TempBuf, _T("\\StringFileInfo\\%04x%04x\\ProductVersion"), language->wLanguage, language->wCodePage);
-	//VerQueryValue(VerInfo, TempBuf, (LPVOID*)&ProductVer, &size);
-
-
-	//size_t productlength = _tcslen(ProductVer);
-	//size_t fileLength = _tcslen(FileVer);
-	///*if (_tcslen(Version)>productlength)
-	//{
-	//	printf("t1\n");
-	//	return 0;
-	//}
-
-	//if (_tcslen(Version)>fileLength)
-	//{
-	//	printf("t2\n");
-	//	return 0;
-	//}*/
-
-	////修改内存  
-	//_tcscpy_s(ProductVer, _tcslen(Version) + 1, Version);
-	//_tcscpy_s(FileVer, _tcslen(Version) + 1, Version);
-
-	//上面都是读取与修改，这里才是更新资源  
-	HANDLE hResource = BeginUpdateResource(FileName, FALSE);
-	if (NULL != hResource)
-	{
-		//这里参数没错，就是最原始读取的资源，通过修改原有的资源内存，达到更新的目的  
-		res = UpdateResource(hResource, RT_VERSION, MAKEINTRESOURCE(VS_VERSION_INFO), language->wLanguage, VerInfo, dwVerInfoSize);
-		if (!res)
+		size = GetFileVersionInfoSizeA(file, 0);
+		buf = (char*)safe_malloc(size + 1);
+		if (!GetFileVersionInfoA(file, 0, size, buf))
 		{
-			printf("t3\n");
-			return 0;
+			log_debuga("fail to get file version info: %d", GetLastError());
+			break;
 		}
-		res = EndUpdateResource(hResource, FALSE);
-		if (!res)
+			
+		if (!VerQueryValueA(buf, "\\", (LPVOID*)&info, &size))
 		{
-			printf("t5\n");
+			log_debuga("fail to query version value: %d", GetLastError());
+			break;
+		}
+
+		ms1 = info->dwFileVersionMS >> 16;
+		ms2 = info->dwFileVersionMS & 0xffff;
+		ls1 = info->dwFileVersionLS >> 16;
+		ls2 = info->dwFileVersionLS & 0xffff;
+
+		log_printa("%d.%d.%d.%d", ms1, ms2, ls1, ls2);
+	} while (0);
+
+	free(buf);
+}
+
+unsigned short version_lang(char* file)
+{
+	unsigned size = 0;
+	char* buf = 0;
+	struct {
+		short lang;
+		short codepage;
+	}*translation;
+	short lang = 0x409;
+
+	do
+	{
+		size = GetFileVersionInfoSizeA(file, 0);
+		if (!size)
+		{
+			log_debuga("fail to get file version info size: %s, %d. ignore", file, GetLastError());
+			break;
+		}
+
+		buf = (char*)safe_malloc(size + 1);
+		if (!GetFileVersionInfoA(file, 0, size, buf))
+		{
+			log_debuga("fail to get file version info: %s, %d. ignore", file, GetLastError());
+			break;
+		}
+
+		VerQueryValueA(buf, "\\VarFileInfo\\Translation", (LPVOID*)&translation, &size);
+		if (!size)
+		{
+			log_debuga("fail to query version value: %d", GetLastError());
+			break;
+		}
+
+		lang = translation->lang;
+
+	} while (0);
+		
+	free(buf);
+	return lang;
+}
+
+void update(char* file, char* buf, int len)
+{
+	HANDLE hres = 0;
+
+	do
+	{
+		hres = BeginUpdateResourceA(file, TRUE);
+		if (!hres)
+		{
+			log_errora("fail to begin update: %d", GetLastError());
+			break;
+		}
+
+		if (!UpdateResource(hres, RT_VERSION, MAKEINTRESOURCE(VS_VERSION_INFO), version_lang(file), buf, len))
+		{
+			log_errora("fail to update: %d", GetLastError());
+			break;
+		}
+		
+		if (!EndUpdateResource(hres, FALSE))
+		{
+			log_errora("fail to end update: %d", GetLastError());
+			break;
+		}
+	} while (0);	
+}
+
+int locate_version_info(char* buf, int len)
+{
+	unsigned* pu = 0;
+	char* p = 0;
+	int i = 0;
+	for (i = 0; i < len - 3; i += 4)
+	{
+		pu = (unsigned*)&(buf[i]);
+		if (*pu == 0xFEEF04BD)
+			break;
+	}
+
+	if (*pu == 0xFEEF04BD)
+	{
+		p = &(buf[i - 40]);
+		if (p[2] == 0x34 && p[3] == 0)
+			return i - 40;
+	}
+	
+	log_errora("version info not found!");
+	return -1;
+}
+
+void write_version(char* file, char* version)
+{
+	char* buf = 0;
+	int len = 0;
+	int p = 0;
+	char rc_file[256];
+	char res_file[256];
+
+	if (!file || !version)
+		return;
+
+	do
+	{
+		str_format(rc_file, 256, "%stmp.rc", temp);
+		prepare(rc_file, version);
+
+		str_format(res_file, 256, "%stmp.res", temp);
+		compile(rc_file, res_file);
+
+		len = read_raw_file(res_file, &buf);
+		if (!len)
+			break;
+
+		p = locate_version_info(buf, len);
+		update(file, &buf[p], len - p);
+	} while (0);
+	
+	free(buf);
+}
+
+int main(int argc, char* argv[])
+{
+	char opt = 0;
+	char* arg = 0;
+	char* file = 0;
+	char* version = 0;
+
+	GetTempPathA(256, temp);
+	current_dir(curr, 256);
+
+	for (;;)
+	{
+		opt = tinyopt(&arg, "f:v:h", argc, argv);
+		if (!opt)
+			break;
+		switch (opt)
+		{
+		case 'f':
+			assert(arg);
+			file = arg;
+			break;
+		case 'h':
+			usage();
 			return 0;
+		case 'v':
+			assert(arg);
+			version = arg;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (file)
+	{
+		if (version)
+		{
+			write_version(file, version);
+		}
+		else
+		{
+			read_version(file);
 		}
 	}
 	else
-	{
-		printf("%d\n", GetLastError());
-	}
+		usage();
 
 	return 0;
 }

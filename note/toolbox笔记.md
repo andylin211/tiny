@@ -73,5 +73,70 @@ everything
 如果需要输入参数的，都以小工具形式出现：比如
 
 
+## version
+
+读文件版本信息
+写文件版本信息（考虑可能之前没有版本信息）
+
+https://msdn.microsoft.com/en-us/library/windows/desktop/ms646981(v=vs.85).aspx
+
+You can add version information to any files that can have Windows resources, such as DLLs, executable files, or .fon font files. To add the information, create a VERSIONINFO Resource and use the resource compiler to compile the resource.
+
+GetFileVersionInfoSize
+GetFileVersionInfo
+VerQueryValue
+
+语言无关信息（一个双字说明语言，一个fixedfileinfo）
+语言相关信息（通过\stringfileinfo\%04x%04x\stringname来获取）
+
+"\\VarFileInfo\\Translation" --> DWORD 低字lang，高字code page
+"\\" --> VS_FIXEDFILEINFO
+
+\StringFileInfo\lang-codepage\string-name
+
+"\\StringFileInfo\\%04x%04x\\FileVersion",lang,codepage --> char*
+"\\StringFileInfo\\%04x%04x\\ProductVersion",lang,codepage --> char*
+
+仅包含文件版本信息的资源定义文件：
+```
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 2018.1.7.10
+BEGIN
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 0x4E4
+  END
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+    VALUE "FileVersion", "2018.1.7.10"
+    END
+  END
+END
+```
+编译命令：
+rc.exe /l 0x0409 test.rc
+
+```
+typedef struct tagVS_FIXEDFILEINFO {
+  DWORD dwSignature;
+  DWORD dwStrucVersion;
+  DWORD dwFileVersionMS;
+  DWORD dwFileVersionLS;
+  DWORD dwProductVersionMS;
+  DWORD dwProductVersionLS;
+  DWORD dwFileFlagsMask;
+  DWORD dwFileFlags;
+  DWORD dwFileOS;
+  DWORD dwFileType;
+  DWORD dwFileSubtype;
+  DWORD dwFileDateMS;
+  DWORD dwFileDateLS;
+} VS_FIXEDFILEINFO;
+```
+
+singature 总是0xFEEF04BD，找到这个签名，读取资源块，update到模块里
+
 
 

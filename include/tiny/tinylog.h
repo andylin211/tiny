@@ -22,7 +22,7 @@ extern "C" {
 
 #ifdef define_tiny_here
 
-#define target_file "C:\\tinylog.txt"
+	static char target_file[256] = { 0 };
 
 #define code_page CP_ACP
 
@@ -94,6 +94,8 @@ extern "C" {
 			if (!_log_flag)
 			{
 				++_log_flag;
+				GetTempPathA(256, target_file);
+				strcat(target_file, "tinylog.txt");
 				fp = fopen(target_file, "wb");
 			}
 			else
@@ -141,6 +143,8 @@ extern "C" {
 			if (!_log_flag)
 			{
 				++_log_flag;
+				GetTempPathA(256, target_file);
+				strcat(target_file, "tinylog.txt");
 				fp = fopen(target_file, "wb");
 			}
 			else

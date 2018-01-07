@@ -808,8 +808,21 @@ awk '{$1=$2=""; print $0}' somefile
 
 
 
+## date.exe
+
+更新模块的版本号
+
+ver=`date +%Y.%m.%d.%H`
+version -f $1 -v $ver
+
+
+## bash.exe 直接运行脚本
+
+就用全路径来指定脚本，因为用到dirname
 
 
 
+## windows下全部文件都用ansi编码
 
+需要一个转码程序！！
 
