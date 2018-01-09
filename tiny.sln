@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bakpdb", "project\bakpdb\bakpdb.vcxproj", "{4CD593C2-31FB-4037-B0E7-FAF3FEE4268F}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "version", "project\version\version.vcxproj", "{F82C176A-BD6D-4F43-9946-6D5150A031DF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "encode", "project\encode\encode.vcxproj", "{9421F440-05F6-4A6E-8858-0BE2C9CA777D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "longpath", "project\longpath\longpath.vcxproj", "{B6F94038-6956-4DC1-B245-52FEA9B44C19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +94,13 @@ Global
 		{9421F440-05F6-4A6E-8858-0BE2C9CA777D}.Release|x64.ActiveCfg = Release|Win32
 		{9421F440-05F6-4A6E-8858-0BE2C9CA777D}.Release|x86.ActiveCfg = Release|Win32
 		{9421F440-05F6-4A6E-8858-0BE2C9CA777D}.Release|x86.Build.0 = Release|Win32
+		{B6F94038-6956-4DC1-B245-52FEA9B44C19}.Debug|x64.ActiveCfg = Release|Win32
+		{B6F94038-6956-4DC1-B245-52FEA9B44C19}.Debug|x64.Build.0 = Release|Win32
+		{B6F94038-6956-4DC1-B245-52FEA9B44C19}.Debug|x86.ActiveCfg = Release|Win32
+		{B6F94038-6956-4DC1-B245-52FEA9B44C19}.Debug|x86.Build.0 = Release|Win32
+		{B6F94038-6956-4DC1-B245-52FEA9B44C19}.Release|x64.ActiveCfg = Release|Win32
+		{B6F94038-6956-4DC1-B245-52FEA9B44C19}.Release|x86.ActiveCfg = Release|Win32
+		{B6F94038-6956-4DC1-B245-52FEA9B44C19}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

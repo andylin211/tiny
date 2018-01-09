@@ -99,7 +99,7 @@ https://www.proxifier.com/download.htm
     *.dll
     *.exe
 
-## 
+## U盘搭建仓库
 
-
-    
+1. gitforwindows.org 下载git
+2. 

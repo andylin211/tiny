@@ -140,3 +140,31 @@ singature 总是0xFEEF04BD，找到这个签名，读取资源块，update到模
 
 
 
+## 长路径
+
+CreateDirectory function
+https://msdn.microsoft.com/zh-cn/library/windows/desktop/aa363855(v=vs.85).aspx
+
+BOOL WINAPI CreateDirectory(
+  _In_     LPCTSTR               lpPathName,
+  _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
+);
+
+lpPathName [in]
+The path of the directory to be created.
+For the ANSI version of this function, there is a default string size limit for paths of 248 characters (MAX_PATH - enough room for a 8.3 filename). To extend this limit to 32,767 wide characters, call the Unicode version of the function and prepend "\\?\" to the path. For more information, see Naming a File.
+
+https://msdn.microsoft.com/zh-cn/library/windows/desktop/aa365247(v=vs.85).aspx
+
+很复杂！！= = 
+
+只实现部分功能：
+
+创建一个非常长的路径 -- 通过指定\\?\前缀 createdirectory
+访问一个非常长的路径-文件操作，删除，运行等 -- 通过指定目录链接 mklink /j
+删除一个非常长的目录 -- 通过目录链接删除子目录
+
+
+## version 
+
+EndUpdateResource last error 110
