@@ -1,3 +1,0 @@
-1>warnings in directory c:\tiny\hellosys
-1>c:\tiny\hellosys\testdrv.c(42) : warning C4133: '=' : incompatible types - from 'WCHAR *' to 'PCHAR'
-1>c:\tiny\hellosys\testdrv.c(286) : warning C4133: 'function' : incompatible types - from 'UCHAR [1]' to 'PCWSTR'

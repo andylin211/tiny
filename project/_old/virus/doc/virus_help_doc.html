@@ -1,0 +1,201 @@
+<html>
+<head>
+    <link href="markdown.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <article>
+        <h1>病毒构造帮助文档</h1><p><em>最新更新：2017.12.15 by andycylin(林蔡勇)</em></p>
+        <h2 id="病毒样本netgjo.sys">病毒样本netgjo.sys</h2><h3>类型</h3><p>RootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>xp</li>
+            <li>win7 32</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>netgjo.sys</li>
+        </ul>
+        <p>大小: 91376 字节</p>
+        <p>MD5: 46CADCE9B51E63505BA717CA14C42C30</p>
+        <h3>构造方法</h3><ol>
+            <li>拷贝到系统drivers目录</li>
+            <li>注册服务，设为自动启动</li>
+            <li>运行服务</li>
+            <li>重启系统</li>
+        </ol>
+        <h3>中毒现象</h3><p><b>pchunter</b>打开"文件"，进入系统"drivers"目录，点最后一列"常规属性"排序，可以看到显示为<code>No</code>的三个文件，其中<code>wan</code>开头和<code>tcp</code>开头的两个文件是病毒文件。（注意：文件名每次都随机变化，从这里可以知道病毒本次运行的名字）</p><p><img src="netgjo_file.png" /></p>
+        <p>驱动模块：</p><p><img src="netgjo_module.png" /></p>
+        <p>内核-系统回调：</p><p><img src="netgjo_callback.png" /></p>
+        <p>内核-过滤驱动：</p><p><img src="netgjo_filter.png" /></p>
+        <br />
+        <h2 id="病毒样本7ffecbfb.sys">病毒样本7ffecbfb.sys</h2><h3>类型</h3><p>RootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>xp</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>7ffecbfb.sys</li>
+        </ul>
+        <p>大小: 350680 字节</p>
+        <p>MD5: 46C7C2A88D562C0940F4025478534460</p>
+        <h3>构造方法</h3><ol>
+            <li>拷贝到系统drivers目录</li>
+            <li>注册服务，设为自动启动</li>
+            <li>运行服务</li>
+            <li>重启系统</li>
+        </ol>
+        <h3>中毒现象</h3><p><b>pchunter</b>打开"文件"，进入系统"drivers"目录，可以看到以<code>7ff</code>开头的文件。（注意：文件名每次都随机变化，从这里可以知道病毒本次运行的名字）</p><p><img src="7ffe_file.png" /></p>
+        <p>驱动模块：</p><p><img src="7ffe_module.png" /></p>
+        <p>内核-系统回调：</p><p><img src="7ffe_callback.png" /></p>
+        <p>内核-过滤驱动：</p><p><img src="7ffe_filter.png" /></p>
+        <br />
+        <h2 id="病毒样本hqbzrnsjo.sys">病毒样本hqbzrnsjo.sys</h2><h3>类型</h3><p>RootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>win7 64</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>hqbzrnsjo.sys</li>
+        </ul>
+        <p>大小: 148584 字节</p>
+        <p>MD5: B0BC2BD8F7203BD8BA81BC86B23C0BA5</p>
+        <h3>构造方法</h3><ol>
+            <li>拷贝到系统drivers目录</li>
+            <li>注册服务，设为自动启动</li>
+            <li>运行服务</li>
+            <li>重启系统</li>
+        </ol>
+        <h3>中毒现象</h3><p><b>pchunter</b>打开"文件"，进入系统"drivers"目录，通过文件大小、文件创建时间或者修改时间等特点可以找到病毒文件。（注意：文件名每次都随机变化，从这里可以知道病毒本次运行的名字）</p><p><img src="hqb_file.png" /></p>
+        <p>驱动模块：</p><p><img src="hqb_module.png" /></p>
+        <p>内核-系统回调：</p><p><img src="hqb_callback.png" /></p>
+        <p>内核-过滤驱动：</p><p><img src="hqb_filter.png" /></p>
+        <br />
+        <h2 id="病毒样本MpKslKnbZi.dll">病毒样本MpKslKnbZi.dll</h2><h3>类型</h3><p>RootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>xp</li>
+            <li>win7 32</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>MpKslKnbZi.dll</li>
+        </ul>
+        <p>大小: 72704 字节</p>
+        <p>MD5: 2ED06BFB4D661456644E14B299F8B169</p>
+        <ul>
+            <li>MpKslIrtn.reg</li>
+        </ul>
+        <p>大小: 2082 字节</p>
+        <p>MD5: A12950F6EFB3A9A8B70B85FA611D57C9</p>
+        <h3>构造方法</h3><ol>
+            <li>拷贝到系统system32目录</li>
+            <li>导入注册表配置MpKslIrtn.reg</li>
+            <li>重启系统</li>
+        </ol>
+        <h3>中毒现象</h3><p>驱动模块：</p><p><img src="MpK_module.png" /></p>
+        <p>内核-系统回调：</p><p><img src="MpK_callback.png" /></p>
+        <p>内核-过滤驱动：</p><p><img src="MpK_filter.png" /></p>
+        <br />
+        <h2 id="病毒样本tqkqjm.sys">病毒样本tqkqjm.sys</h2><h3>类型</h3><p>RootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>xp</li>
+            <li>win7 32</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>tqkqjm.sys</li>
+        </ul>
+        <p>大小: 111152 字节</p>
+        <p>MD5: 944A7DA5A0CC4FC41266EB58F1F29DC5</p>
+        <h3>构造方法</h3><ol>
+            <li>拷贝到系统drivers目录</li>
+            <li>注册服务，设为自动启动</li>
+            <li>运行服务</li>
+            <li>重启系统</li>
+        </ol>
+        <h3>中毒现象</h3><p><b>pchunter</b>打开"文件"，进入系统"drivers"目录，通过文件大小、文件创建时间或者修改时间等特点可以找到病毒文件。（注意：文件名每次都随机变化，从这里可以知道病毒本次运行的名字）</p><p><img src="tqkq_file.png" /></p>
+        <p>驱动模块：</p><p><img src="tqkq_module.png" /></p>
+        <p>内核-系统回调：</p><p><img src="tqkq_callback.png" /></p>
+        <p>内核-过滤驱动：</p><p><img src="tqkq_filter.png" /></p>
+        <br />
+        <h2 id="病毒样本异鬼(VBR)">病毒样本异鬼(VBR)</h2><h3>类型</h3><p>BootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>xp</li>
+            <li>win7 32</li>
+            <li>win7 64</li>
+            <li>win10 32</li>
+            <li>win10 64</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>Loader.exe</li>
+        </ul>
+        <p>大小: 452608 字节</p>
+        <p>MD5: D83D6094383BD2B015C9ABE3CDA80D2C</p>
+        <ul>
+            <li>infect_x86.dll</li>
+        </ul>
+        <p>大小: 117760 字节</p>
+        <p>MD5: 77D740E59B1C014ACC163703FE2A518D</p>
+        <ul>
+            <li>infect_x64.dll</li>
+        </ul>
+        <p>大小: 128512 字节</p>
+        <p>MD5: 768CC2A6F16377DA1BE00F0AC2C79F50</p>
+        <ul>
+            <li>infect_x86_win10.dll</li>
+        </ul>
+        <p>大小: 115200 字节</p>
+        <p>MD5: DF10FFFF4995D88CF42676A957B9036A</p>
+        <ul>
+            <li>infect_x64_win10.dll</li>
+        </ul>
+        <p>大小: 124416 字节</p>
+        <p>MD5: C8FB1521DA054615F1C07F6F0013EBA3</p>
+        <br />
+        <h3>构造方法</h3><ol>
+            <li>将对应版本的DLL改成infect_x86.dll</li>
+            <li>运行Loader.exe</li>
+            <li>重启系统</li>
+        </ol>
+        <h3>中毒现象</h3><p>驱动模块：</p><p><img src="vbr_module.png" /></p>
+        <p>内核-hook：</p><p><img src="vbr_hook.png" /></p>
+        <br />
+        <h2 id="病毒样本暗云II(MBR)">病毒样本暗云II(MBR)</h2><h3>类型</h3><p>BootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>win7 32</li>
+            <li>win7 64</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>anyun2mbr.bin</li>
+        </ul>
+        <p>大小: 32768 字节</p>
+        <p>MD5: 2DC44D94DB291049B0393A801927A9D8</p>
+        <h3>构造方法</h3><ol>
+            <li>备份当前MBR到第2个扇区</li>
+            <li>将暗云anyun2mbr.bin的0x0~0x1B1共0x1B2字节拷贝到磁盘的第一个扇区</li>
+            <li>将暗云anyun2mbr.bin的0x400~0x7DFF共0x7A00字节拷贝到磁盘的第三个扇区</li>
+        </ol>
+        <p><em>(可以使用winhex工具)</em></p>
+        <h3>中毒现象</h3><p>一般能顺利进入系统就说明中毒了。</p>
+        <p>具体，可以通过比对MBR的内容知道是否中毒。</p>
+        <p>经验上，通过pchunter看有如下特征：</p><p><img src="anyun_dpc.png" /></p>
+        <h2 id="病毒样本隐魂(MBR)">病毒样本隐魂(MBR)</h2><h3>类型</h3><p>BootKit病毒</p>
+        <h3>系统</h3><ul>
+            <li>win7 32</li>
+            <li>win7 64</li>
+        </ul>
+        <h3>样本文件</h3><ul>
+            <li>yinhunmbr.bin</li>
+        </ul>
+        <p>大小: 32768 字节</p>
+        <p>MD5: 25299BB763D32A2223E4C6256A068C6C</p>
+        <ul>
+            <li>yinhunmbr2.bin</li>
+        </ul>
+        <p>大小: 102401 字节</p>
+        <p>MD5: A83B3991B1B07B7C180C37607A9024A0</p>
+        <h3>构造方法</h3><ol>
+            <li>备份本地MBR(偏移0-0x200）,备份到本地MBR偏移0x200处</li>
+            <li>用附件中的yinhunmbr.bin偏移0-1af的数据,覆盖在本地MBR偏移0x00处</li>
+            <li>用附件中的yinhunmbr.bin偏移0x400-末尾的数据,覆盖在本地MBR偏移0x400处</li>
+            <li>用附件中的yinhunmbr2.bin数据,覆盖第400个扇区(偏移0x3200)</li>
+        </ol>
+        <p><em>(可以使用winhex工具)</em></p>
+        <h3>中毒现象</h3><p>一般能顺利进入系统就说明中毒了。</p>
+        <p>具体，可以通过比对MBR的内容知道是否中毒。</p>
+    </article>
+  </body>
+</html>
